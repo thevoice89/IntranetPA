@@ -1,0 +1,2 @@
+# La cartella ./traefik/letsencrypt viene creata al primo avvio e contiene
+# acme.json (certificati TLS). Mantenuta vuota nel repository.

@@ -1,0 +1,114 @@
+# Stack Intranet Aziendale - Configurazione RETE LOCALE (solo HTTP, porta 80)
+# Gateway: Traefik v3 (file provider)  |  App: Next.js  |  DB: PostgreSQL
+#
+# Avvio:  docker compose up -d --build
+# Accesso: http://IP_DELLA_VM/  (es. http://192.168.1.10/)
+#
+# NB: si usa il "file provider" di Traefik (config in ./traefik/dynamic) invece
+# del provider Docker: i Docker Engine moderni rifiutano l'API legacy su cui il
+# provider Docker di Traefik va in fallback. Per aggiungere container futuri,
+# basta aggiungere un router/service in ./traefik/dynamic/intranet.yml.
+
+services:
+  # --- Reverse Proxy / Gateway -----------------------------------------
+  traefik:
+    image: traefik:v3.5
+    container_name: intranet-traefik
+    restart: unless-stopped
+    command:
+      - "--entrypoints.web.address=:80"
+      - "--providers.file.directory=/etc/traefik/dynamic"
+      - "--providers.file.watch=true"
+    ports:
+      - "80:80"
+    volumes:
+      - "./traefik/dynamic:/etc/traefik/dynamic:ro"
+    networks:
+      - web
+    depends_on:
+      - intranet
+
+  # --- Applicazione Intranet (Next.js) ---------------------------------
+  intranet:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: intranet-app
+    restart: unless-stopped
+    expose:
+      - "3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - SYNC_TOKEN=${SYNC_TOKEN}
+      - UPLOAD_DIR=/app/uploads
+      # Chiave stabile per gli ID delle Server Action: evita l'errore
+      # "Failed to find Server Action" dopo un nuovo deploy.
+      - NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=${NEXT_SERVER_ACTIONS_ENCRYPTION_KEY}
+      # Link nelle email di notifica moduli + invio SMTP (vedi .env.example).
+      - APP_BASE_URL=${APP_BASE_URL}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_SECURE=${SMTP_SECURE}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - SMTP_FROM=${SMTP_FROM}
+      # Sync presenze da timbrature (vedi .env.example).
+      - SICRAWEB_HOST=${SICRAWEB_HOST}
+      - SICRAWEB_ALIAS=${SICRAWEB_ALIAS}
+      - SICRAWEB_USERNAME=${SICRAWEB_USERNAME}
+      - SICRAWEB_PASSWORD=${SICRAWEB_PASSWORD}
+      - SICRAWEB_COD_ENTE=${SICRAWEB_COD_ENTE}
+    volumes:
+      - uploads:/app/uploads
+    networks:
+      - web
+    depends_on:
+      - db
+
+  # --- Database ----------------------------------------------------------
+  # L'immagine pgvector/pgvector serviva solo per la ricerca semantica AI
+  # (Ollama + embeddings), feature rimossa il 2026-07-06: nessuna colonna
+  # vector/extension "vector" in uso oggi (vedi schema in src/lib/db.ts), quindi
+  # basterebbe postgres:17-alpine, più leggera. Migrazione tentata il 2026-07-31
+  # e ripristinata a pgvector nella stessa sessione: durante il restore del
+  # backup su un volume vuoto, il primo errore di foreign key manda la
+  # transazione psql in stato "aborted" e fa saltare silenziosamente TUTTO il
+  # caricamento dati successivo nel file (non solo la riga incriminata) — un
+  # semplice `psql < backup.sql` quindi NON è sufficiente. La procedura corretta
+  # è: prependere `SET session_replication_role = replica;` allo stream prima
+  # del resto del dump (disattiva il controllo FK durante il caricamento,
+  # l'ordine delle tabelle non conta più) — vedi comando di ripristino sotto.
+  # ATTENZIONE: cambiare immagine Postgres richiede sempre backup/restore dei
+  # dati (il volume Docker non è compatibile automaticamente tra immagini):
+  #   docker compose exec db pg_dump -U $POSTGRES_USER $POSTGRES_DB > backup.sql
+  # Poi: docker compose down && docker volume rm intranet_pgdata
+  # Poi ripristina (con FK disattivati, vedi sopra):
+  #   (echo "SET session_replication_role = replica;"; cat backup.sql) \
+  #     | docker compose exec -T db psql -U intranet intranet
+  db:
+    image: pgvector/pgvector:pg17
+    container_name: intranet-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - web
+
+# Rete condivisa: Traefik raggiunge gli altri servizi tramite il loro nome
+# (DNS interno Docker). I container futuri si uniscono a "web" e si dichiarano
+# in ./traefik/dynamic per essere instradati.
+networks:
+  web:
+    name: web
+    driver: bridge
+
+volumes:
+  pgdata:
+  uploads:

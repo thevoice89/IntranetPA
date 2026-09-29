@@ -1,0 +1,2956 @@
+/* ============================================================
+   Design system Intranet — moderno, minimale
+   ============================================================ */
+:root {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-2: #fbfbfc;
+  --border: #e8eaee;
+  --text: #14171f;
+  --muted: #6b7280;
+  --muted-2: #9aa1ad;
+
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: #eef0fe;
+
+  --ok: #0f9d58;
+  --ok-soft: #e7f6ed;
+  --warn: #b7791f;
+  --warn-soft: #fbf2dd;
+  --off: #d33b3b;
+  --off-soft: #fdebeb;
+
+  --radius: 14px;
+  --radius-sm: 10px;
+  --shadow-sm: 0 1px 2px rgba(20, 23, 31, 0.05);
+  --shadow: 0 4px 16px rgba(20, 23, 31, 0.06);
+  --shadow-lg: 0 12px 32px rgba(20, 23, 31, 0.10);
+
+  --sidebar-w: 15.5rem;
+  --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+}
+
+/* Tema scuro */
+:root[data-theme="dark"] {
+  --bg: #0f1218;
+  --surface: #171b23;
+  --surface-2: #1e232d;
+  --border: #2a313d;
+  --text: #e8eaf0;
+  --muted: #a3acba;
+  --muted-2: #717b8a;
+  --accent: #818cf8;
+  --accent-hover: #a5b0ff;
+  --accent-soft: #20263a;
+  --ok: #34d399;
+  --ok-soft: #102a20;
+  --warn: #fbbf24;
+  --warn-soft: #2b2410;
+  --off: #f87171;
+  --off-soft: #2c1616;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.55);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============================================================
+   Barra di scorrimento — stesso trattamento della sidebar (sottile,
+   invisibile finché non ci si passa sopra): qui applicato a tutta la
+   pagina e a ogni contenitore con overflow (tabelle admin, popover,
+   liste con scroll interno...), non solo al menu laterale.
+   ============================================================ */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+*:hover {
+  scrollbar-color: rgba(148, 163, 184, 0.5) transparent;
+}
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 999px;
+}
+*:hover::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.5);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+/* ============================================================
+   Banner ambiente di TEST (solo quando <html data-staging="true">,
+   vedi app/layout.tsx — mai presente in produzione). Sticky invece di
+   fixed: partecipa al flusso normale, quindi spinge giù .shell da solo,
+   senza bisogno di un padding-top manuale sul body.
+   ============================================================ */
+:root[data-staging="true"] {
+  --staging-h: 34px;
+}
+.staging-banner {
+  position: sticky;
+  top: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  height: var(--staging-h);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #3d2b00;
+  background: repeating-linear-gradient(
+    135deg,
+    #ffcc33,
+    #ffcc33 14px,
+    #f5a623 14px,
+    #f5a623 28px
+  );
+  border-bottom: 2px solid #b9790a;
+}
+/* La sidebar è sticky/fixed a top:0 di suo (anche nella variante "cassetto"
+   sotto i 760px, vedi il media query più sotto): questa regola vince su
+   entrambe per specificità (attributo + classe > sola classe), senza doverla
+   ripetere nel media query. Stessa altezza in meno, così non scorre sotto
+   il banner né, sotto i 760px, ne parte coperta in alto. */
+:root[data-staging="true"] .sidebar {
+  top: var(--staging-h);
+  height: calc(100vh - var(--staging-h));
+}
+/* L'hamburger mobile è fixed a top:0.75rem: senza questo scivolerebbe in
+   parte sotto il banner (stesso motivo della sidebar sopra). */
+:root[data-staging="true"] .nav-toggle-btn {
+  top: calc(var(--staging-h) + 0.75rem);
+}
+
+/* ============================================================
+   Shell con sidebar
+   ============================================================ */
+.shell {
+  display: grid;
+  grid-template-columns: var(--sidebar-w) 1fr;
+  min-height: 100vh;
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100vh;
+  overflow-y: auto;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 1.25rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.sidebar__brand {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.3rem 0.4rem 1rem;
+}
+/* Stemma del Comune nella sidebar del sito pubblico: a differenza del lockup
+   orizzontale sotto (brand-logo-wrap, usato in admin), qui l'immagine è
+   verticale — altezza fissa e larghezza libera invece di riempire tutta la
+   sidebar, altrimenti verrebbe enorme. */
+.sidebar__brand--crest {
+  align-items: center;
+  padding: 0.9rem 0.4rem 1.1rem;
+  border-radius: 20px;
+}
+.sidebar__brand-crest-img {
+  position: relative;
+  display: block;
+  height: 128px;
+  width: auto;
+  z-index: 1;
+}
+/* Logo istituzionale orizzontale su riquadro bianco (leggibile anche al buio) */
+.brand-logo-wrap {
+  display: block;
+  width: 100%;
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 9px 11px;
+  box-shadow: var(--shadow-sm);
+}
+.brand-logo {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.sidebar__brand-caption {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--text);
+  padding-left: 0.2rem;
+}
+.sidebar__logo {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, var(--accent), #7c75f0);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 0.9rem;
+  box-shadow: var(--shadow-sm);
+}
+.sidebar__logo-img {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.sidebar__brand-text {
+  font-weight: 700;
+  font-size: 0.92rem;
+  line-height: 1.2;
+}
+
+/* Home + accesso (Login o saluto da loggati), raggruppati in alto nella
+   sidebar subito sotto il logo — vedi sidebar__topnav in Sidebar.tsx. */
+.sidebar__topnav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 0 0.1rem 0.7rem;
+}
+.sidebar__topnav-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  flex: 1 1 auto;
+  padding: 0.5rem 0.7rem;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  color: var(--text);
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: center;
+  white-space: nowrap;
+  transition: filter 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+.sidebar__topnav-link:hover {
+  filter: brightness(0.97);
+}
+.sidebar__topnav-link--active {
+  background: var(--accent);
+  color: #fff;
+}
+.sidebar__topnav-link--utente {
+  white-space: normal;
+}
+
+.sidebar__section {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted-2);
+  padding: 0.9rem 0.7rem 0.35rem;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  font-size: 0.92rem;
+  font-weight: 500;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.nav-link:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+.nav-link--active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+.nav-link__icon {
+  font-size: 1.05rem;
+  width: 1.3rem;
+  text-align: center;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+}
+.nav-row {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+.nav-row .nav-link {
+  flex: 1;
+  min-width: 0;
+}
+.nav-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.8rem;
+  height: 1.8rem;
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  color: var(--muted-2);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.7rem;
+  transition: transform 0.15s ease, background 0.12s ease, color 0.12s ease;
+}
+.nav-toggle:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+.nav-toggle--aperto {
+  transform: rotate(180deg);
+}
+.nav-submenu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  padding: 0.15rem 0 0.35rem 1.95rem;
+}
+.nav-sublink {
+  padding: 0.35rem 0.6rem;
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  font-size: 0.82rem;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.nav-sublink:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+.nav-sublink--voce {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex: 1;
+  min-width: 0;
+}
+.nav-sublink--active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+.nav-submenu--nidificato {
+  padding-left: 1.95rem;
+}
+
+/* Il pulsante "Comunicazioni" che apre il gruppo: stesso aspetto di un
+   .nav-link ma senza sottolineatura da link, essendo un <button> senza pagina
+   propria (vedi Sidebar.tsx). */
+.nav-link--gruppo {
+  border: none;
+  background: transparent;
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.sidebar__spacer {
+  flex: 1;
+}
+
+/* ============================================================
+   Controllo dimensione testo (sidebar)
+   ============================================================ */
+.font-size-control {
+  display: flex;
+  align-items: stretch;
+  gap: 0.3rem;
+  padding: 0.2rem 0.1rem;
+}
+.font-size-control__btn {
+  flex: 1;
+  min-width: 0;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.2rem;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+.font-size-control__btn:hover:not(:disabled) {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--accent);
+}
+.font-size-control__btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.font-size-control__btn--reset {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.main {
+  padding: 2.2rem clamp(1.2rem, 4vw, 3rem);
+  max-width: 1600px;
+  width: 100%;
+}
+
+/* ============================================================
+   Header di pagina
+   ============================================================ */
+.page-header {
+  margin-bottom: 1.75rem;
+}
+.page-header h1 {
+  font-size: 1.65rem;
+  font-weight: 700;
+}
+.page-header p {
+  color: var(--muted);
+  margin-top: 0.35rem;
+  font-size: 0.97rem;
+}
+.page-header__row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* Meteo cliccabile (→ 3bmeteo) di fianco al titolo in home, versione compatta
+   dello stesso widget che stava nella colonna laterale (vedi .widget-meteo__* più
+   sotto, riusate qui per icona/temperatura/descrizione). */
+.header-meteo {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.8rem 1.2rem;
+  text-decoration: none;
+  color: var(--text);
+  flex-shrink: 0;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+.header-meteo:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-lg);
+}
+.header-meteo__icon {
+  font-size: 2.1rem;
+  line-height: 1;
+}
+.header-meteo__temp {
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.header-meteo__desc {
+  color: var(--muted);
+  font-size: 0.82rem;
+  margin-top: 0.2rem;
+}
+@media (max-width: 640px) {
+  .header-meteo__desc {
+    display: none;
+  }
+}
+
+/* ============================================================
+   Card
+   ============================================================ */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ============================================================
+   Comunicazioni
+   ============================================================ */
+.comm-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  list-style: none;
+}
+.comm-item {
+  padding: 1.15rem 1.3rem;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+.comm-item:hover {
+  box-shadow: var(--shadow);
+  transform: translateY(-1px);
+}
+.comm-item__top {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.55rem;
+}
+.comm-item__title {
+  font-size: 1.12rem;
+  font-weight: 650;
+  margin-bottom: 0.2rem;
+}
+.comm-item__excerpt {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+.comm-item__meta {
+  margin-top: 0.75rem;
+  font-size: 0.83rem;
+  color: var(--muted-2);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.comm-item__meta strong {
+  color: var(--muted);
+  font-weight: 600;
+}
+.comm-item__link {
+  transition: color 0.12s ease;
+}
+.comm-item__link:hover {
+  color: var(--accent);
+}
+.comm-item__more {
+  margin-left: auto;
+  color: var(--accent);
+  font-weight: 600;
+}
+.comm-item__more:hover {
+  text-decoration: underline;
+}
+
+/* ============================================================
+   Commenti (comunicazioni)
+   ============================================================ */
+.commenti-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  list-style: none;
+  margin-bottom: 1rem;
+}
+.commento-item {
+  padding: 0.7rem 0.9rem;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+}
+.commento-item__meta {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--muted-2);
+}
+
+/* ============================================================
+   Badge & status pill
+   ============================================================ */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  letter-spacing: 0.02em;
+}
+.badge--highlight {
+  background: #fff4d6;
+  color: #91610a;
+}
+.badge--rsu {
+  background: #e1f5ec;
+  color: #1d7a4f;
+}
+.badge--sicurezza {
+  background: #fde3d3;
+  color: #9a3412;
+}
+.badge--eventi {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+.badge--formazione {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.73rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+}
+.status::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.status--attivo {
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+.status--manutenzione,
+.status--smartworking {
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+.status--offline {
+  background: var(--off-soft);
+  color: var(--off);
+}
+
+/* ============================================================
+   Griglia servizi
+   ============================================================ */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+}
+.service-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 1.25rem;
+  transition: box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+}
+.service-card:hover {
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
+  border-color: #d8dbe2;
+}
+.service-card__icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  display: grid;
+  place-items: center;
+  font-size: 1.45rem;
+}
+.service-card__name {
+  font-size: 1.05rem;
+  font-weight: 650;
+}
+.service-card__desc {
+  color: var(--muted);
+  font-size: 0.9rem;
+  flex: 1;
+}
+.service-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.3rem;
+}
+.service-card__cat {
+  font-size: 0.78rem;
+  color: var(--muted-2);
+}
+
+/* Moduli: differenzia a colpo d'occhio i moduli "documento" (file pronto da
+   scaricare, verde come --ok) dai "form" (da compilare, colore di default). */
+.service-card--documento {
+  border-left: 3px solid var(--ok);
+}
+.service-card--documento .service-card__icon {
+  background: var(--ok-soft);
+  border-color: transparent;
+}
+.admin-row--documento {
+  border-left: 3px solid var(--ok);
+}
+.subsection-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 1rem 0 0.6rem;
+}
+.subsection-title--documento {
+  color: var(--ok);
+}
+
+/* ============================================================
+   Home — riepilogo
+   ============================================================ */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+}
+.stat {
+  padding: 1.2rem 1.3rem;
+}
+.stat__value {
+  font-size: 1.9rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.stat__label {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-top: 0.15rem;
+}
+.stat--link {
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+.stat--link:hover {
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
+}
+.quick-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+.quick-card {
+  padding: 1.3rem;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+.quick-card:hover {
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
+}
+.quick-card h2 {
+  font-size: 1.1rem;
+  margin-bottom: 0.3rem;
+}
+.quick-card p {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.quick-card__arrow {
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 0.88rem;
+  margin-top: 0.7rem;
+  display: inline-block;
+}
+
+/* ============================================================
+   Bottoni
+   ============================================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.55rem 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+.btn--primary {
+  background: var(--accent);
+  color: #fff;
+}
+.btn--primary:hover {
+  background: var(--accent-hover);
+}
+.btn--ghost {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text);
+}
+.btn--ghost:hover {
+  background: var(--surface-2);
+}
+.btn--danger {
+  background: var(--surface);
+  border-color: var(--off-soft);
+  color: var(--off);
+}
+.btn--danger:hover {
+  background: var(--off-soft);
+}
+.btn--sm {
+  padding: 0.38rem 0.7rem;
+  font-size: 0.82rem;
+}
+
+/* ============================================================
+   Form (admin)
+   ============================================================ */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.field label {
+  font-size: 0.83rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.input,
+.textarea,
+.select {
+  font-family: inherit;
+  font-size: 0.92rem;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.75rem;
+  width: 100%;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+.input:focus,
+.textarea:focus,
+.select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.textarea {
+  resize: vertical;
+  min-height: 90px;
+}
+.field--row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.field--check {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+.field--check input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+}
+
+/* ============================================================
+   Tabella admin
+   ============================================================ */
+.admin-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  list-style: none;
+}
+.admin-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem 1.1rem;
+}
+.admin-row__main {
+  flex: 1;
+  min-width: 0;
+}
+.admin-row__title {
+  font-weight: 600;
+  font-size: 0.97rem;
+}
+.admin-row__sub {
+  color: var(--muted-2);
+  font-size: 0.82rem;
+  margin-top: 0.1rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.admin-row__actions {
+  display: flex;
+  gap: 0.45rem;
+  flex-shrink: 0;
+}
+.admin-row__handle {
+  flex-shrink: 0;
+  color: var(--muted-2);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: grab;
+}
+.inline-form {
+  display: inline;
+}
+
+/* Etichetta modificabile inline nelle righe admin (es. MenuSortableList): sembra
+   testo semplice finché non riceve hover/focus, per un rinomina "sul posto" invece
+   di un form separato (vedi feedback su editor in stile consumer). */
+.admin-row__title-input {
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.97rem;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 0.25rem 0.5rem;
+  margin: -0.25rem -0.5rem;
+  width: 100%;
+}
+.admin-row__title-input:hover {
+  border-color: var(--border);
+}
+.admin-row__title-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--surface);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+/* ============================================================
+   Organigramma uffici (/admin/uffici) — Area > Settore > Ufficio come
+   albero collassabile: un <details> per nodo (sempre aperto di default,
+   comprimibile a mano), un ramo verticale tratteggiato per i figli, peso e
+   icona decrescenti per livello così la gerarchia si legge a colpo d'occhio
+   senza dover leggere ogni riga.
+   ============================================================ */
+.org-tree {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+.org-node {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+.org-node--area {
+  border-left: 4px solid var(--accent);
+}
+.org-node--settore {
+  border-left: 3px solid var(--accent);
+}
+.org-node--ufficio {
+  border-left: 2px solid var(--border);
+}
+.org-node__head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.85rem 1.1rem;
+  cursor: pointer;
+  list-style: none;
+}
+.org-node__head::-webkit-details-marker {
+  display: none;
+}
+.org-node__head::marker {
+  content: "";
+}
+.org-node__chevron {
+  display: inline-block;
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  color: var(--muted-2);
+  transition: transform 0.15s ease;
+}
+.org-node[open] > .org-node__head .org-node__chevron {
+  transform: rotate(90deg);
+}
+.org-node__icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.org-node__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.org-node--area > .org-node__head .org-node__name {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+.org-node--settore > .org-node__head .org-node__name {
+  font-size: 0.98rem;
+  font-weight: 650;
+}
+.org-node--ufficio > .org-node__head .org-node__name {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.org-node__meta {
+  margin-left: auto;
+  padding-left: 0.75rem;
+  font-size: 0.78rem;
+  color: var(--muted-2);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.org-node__body {
+  padding: 0 1.1rem 1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.org-branch {
+  margin: 0.2rem 0 0 1.5rem;
+  padding-left: 1rem;
+  border-left: 2px dashed var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.org-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.org-edit-row__rename {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 14rem;
+}
+.org-edit-row__parent {
+  max-width: 12rem;
+}
+.org-resp-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+}
+
+/* Persone assegnate a un nodo: sotto-disclosure indipendente da quella del
+   nodo, così l'organigramma resta leggibile anche con elenchi lunghi. */
+.org-persone {
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+}
+.org-persone__summary {
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--muted);
+  list-style: none;
+}
+.org-persone__summary::-webkit-details-marker {
+  display: none;
+}
+.org-persone__summary strong {
+  color: var(--text);
+}
+.org-persone__body {
+  padding: 0.1rem 0.75rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.org-persone__list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.org-persone__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: var(--radius-sm);
+}
+.org-persone__item:hover {
+  background: var(--surface-2);
+}
+.org-persone__link {
+  font-size: 0.87rem;
+  font-weight: 500;
+  color: var(--text);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.org-persone__link:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+.org-persone__ruolo {
+  color: var(--muted-2);
+  font-weight: 400;
+}
+.org-persone__aggiungi {
+  position: relative;
+  max-width: 22rem;
+}
+
+/* ============================================================
+   Login
+   ============================================================ */
+.login-wrap {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+}
+.login-card {
+  width: 100%;
+  max-width: 380px;
+  padding: 2rem;
+}
+.login-card h1 {
+  font-size: 1.3rem;
+  margin-bottom: 0.3rem;
+}
+.login-card p {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-bottom: 1.4rem;
+}
+.alert {
+  background: var(--off-soft);
+  color: var(--off);
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--radius-sm);
+  margin-bottom: 1rem;
+}
+
+/* ============================================================
+   Topbar admin
+   ============================================================ */
+.admin-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.75rem;
+}
+.empty {
+  color: var(--muted-2);
+  font-size: 0.92rem;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+/* ============================================================
+   Allegati
+   ============================================================ */
+.allegati {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+}
+.allegato {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px solid #e0e3fb;
+  padding: 0.3rem 0.6rem;
+  border-radius: 8px;
+  transition: background 0.12s ease;
+}
+.allegato:hover {
+  background: #e3e7fd;
+}
+
+/* ============================================================
+   Filtri (tab) — admin comunicazioni
+   ============================================================ */
+.tabs {
+  display: inline-flex;
+  gap: 0.25rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.25rem;
+  margin-bottom: 1.25rem;
+}
+.tab {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 0.35rem 0.8rem;
+  border-radius: 7px;
+}
+.tab:hover {
+  color: var(--text);
+}
+.tab--active {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.badge--tipo {
+  background: #eef1f4;
+  color: var(--muted);
+}
+
+/* ============================================================
+   Meta utente in sidebar admin
+   ============================================================ */
+.user-meta {
+  padding: 0.6rem 0.7rem;
+  border-top: 1px solid var(--border);
+  margin-top: 0.4rem;
+}
+.user-meta__name {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.user-meta__role {
+  font-size: 0.75rem;
+  color: var(--muted-2);
+  text-transform: capitalize;
+}
+
+.nav-badge {
+  margin-left: auto;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notice {
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.7rem 0.9rem;
+  border-radius: var(--radius-sm);
+  margin-bottom: 1.1rem;
+}
+.notice--ok {
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+
+.section-title {
+  font-size: 1.05rem;
+  font-weight: 650;
+  margin: 1.75rem 0 0.9rem;
+}
+
+.help {
+  font-size: 0.8rem;
+  color: var(--muted-2);
+}
+
+.snippet {
+  font-size: 0.88rem;
+  color: var(--muted);
+  margin-top: 0.3rem;
+  line-height: 1.5;
+}
+.snippet mark {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-radius: 3px;
+  padding: 0 0.15em;
+}
+
+/* ============================================================
+   Rich text — contenuto formattato con RichTextEditor (descrizione
+   modulo, blocchi "testo informativo"), reso con dangerouslySetInnerHTML
+   ============================================================ */
+.rich-text {
+  line-height: 1.7;
+}
+.rich-text p,
+.rich-text div {
+  margin: 0 0 0.75em;
+}
+.rich-text p:last-child,
+.rich-text div:last-child {
+  margin-bottom: 0;
+}
+.rich-text ul,
+.rich-text ol {
+  margin: 0 0 0.75em;
+  padding-left: 1.4em;
+}
+.rich-text a {
+  color: var(--accent);
+  text-decoration: underline;
+}
+.rich-text h2,
+.rich-text h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 1.2em 0 0.5em;
+}
+.rich-text h2:first-child,
+.rich-text h3:first-child {
+  margin-top: 0;
+}
+/* Immagini nel corpo delle comunicazioni: si adattano alla colonna di testo
+   (anche una foto da 4000px) e restano centrate se l'autore le ha centrate,
+   perché l'allineamento sta sul paragrafo che le contiene. */
+.rich-text img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-sm);
+  margin: 0.3em 0;
+}
+
+/* ============================================================
+   Ricerca in sidebar
+   ============================================================ */
+.sidebar__search {
+  padding: 0 0.6rem 0.9rem;
+}
+.input--search {
+  font-size: 1rem;
+  padding: 0.65rem 1rem;
+  background: var(--surface-2);
+  border-radius: 0.5rem;
+  font-weight: 500;
+  border: 2px solid #ccff00;
+  box-shadow: 0 0 0 3px rgba(204, 255, 0, 0.18);
+}
+
+/* ============================================================
+   Ricerca nel corpo della home (sotto il riquadro di benvenuto,
+   prima delle news) — sulle altre pagine la ricerca è solo in
+   sidebar, vedi .sidebar__search--glow qui sopra e in skin-aurora.css.
+   ============================================================ */
+.home-search {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 1.9rem;
+  padding: 0.5rem 0.6rem 0.5rem 1.1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+.home-search__icon {
+  font-size: 1.05rem;
+  flex-shrink: 0;
+}
+.home-search__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-size: 0.97rem;
+  color: var(--text);
+  outline: none;
+}
+.home-search__btn {
+  flex-shrink: 0;
+}
+@media (max-width: 560px) {
+  .home-search__btn {
+    display: none;
+  }
+}
+
+/* ============================================================
+   Visualizzatore PDF
+   ============================================================ */
+.pdf-viewer {
+  padding: 0;
+  overflow: hidden;
+}
+.pdf-viewer iframe {
+  display: block;
+  width: 100%;
+  height: 78vh;
+  border: 0;
+}
+
+/* ============================================================
+   Video embed responsive (16:9)
+   ============================================================ */
+.video-embed {
+  position: relative;
+  width: 100%;
+  max-width: 880px;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  background: #000;
+}
+.video-embed iframe,
+.video-embed video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* ============================================================
+   Home — news in evidenza (hero)
+   ============================================================ */
+.hero-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 1.1rem;
+  margin-bottom: 2.2rem;
+}
+@media (max-width: 400px) {
+  /* Sotto i 400px il minimo di 340px della griglia sopra non ci sta più
+     (larghezza contenuto = viewport - padding .main), causando scroll
+     orizzontale sull'home: sotto quella soglia forziamo una sola colonna. */
+  .hero-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.hero-card {
+  padding: 1.6rem 1.7rem;
+  border-left: 4px solid var(--accent);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+.hero-card:hover {
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
+}
+.hero-card__label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--accent);
+}
+.hero-card__title {
+  font-size: 1.45rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+.hero-card__title a:hover {
+  color: var(--accent);
+}
+.hero-card__excerpt {
+  color: var(--muted);
+  font-size: 0.98rem;
+}
+.hero-card__meta {
+  font-size: 0.83rem;
+  color: var(--muted-2);
+  margin-top: auto;
+  padding-top: 0.4rem;
+}
+.section-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted-2);
+  margin-bottom: 0.9rem;
+}
+
+/* ============================================================
+   Home — layout a due colonne (news + colonna widget)
+   ============================================================ */
+.home-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(270px, 320px);
+  gap: 2rem;
+  align-items: start;
+}
+@media (max-width: 980px) {
+  .home-layout {
+    grid-template-columns: 1fr;
+  }
+}
+.home-aside {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+  /* La prima sezione news ha sopra l'etichetta (.news-section__label,
+     0.78rem/1.55 + margin-bottom 1rem): senza questo margine il primo widget
+     partirebbe più in alto della prima card news, pur condividendo la stessa
+     riga di griglia (align-items: start). */
+  margin-top: calc(0.78rem * 1.55 + 1rem);
+}
+@media (max-width: 980px) {
+  .home-aside {
+    /* Sotto i 980px le colonne si impilano: l'allineamento con la prima news
+       non serve più, il margine aggiuntivo qui creerebbe solo un vuoto. Questa
+       regola deve stare dopo la .home-aside sopra (stessa specificità: vince
+       chi viene dopo nel foglio), altrimenti verrebbe ignorata. */
+    margin-top: 0;
+  }
+}
+
+/* Le sezioni news, ciascuna con una colorazione/bagliore diverso per
+   distinguerle a colpo d'occhio: ambra per l'evidenza, blu per l'ordine
+   cronologico, viola per la bacheca informale, verde per le comunicazioni RSU,
+   arancione per la sicurezza sul lavoro. */
+.news-section {
+  margin-bottom: 2.4rem;
+}
+.news-section__label {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text);
+  margin-bottom: 1rem;
+}
+.news-section__label::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 22%, transparent);
+}
+.news-section--evidenza {
+  --news-glow: #d98a1f;
+}
+.news-section--cronologiche {
+  --news-glow: #2f6fb8;
+}
+.news-section--informali {
+  --news-glow: #9450b8;
+}
+.news-section--rsu {
+  --news-glow: #1d9e63;
+}
+.news-section--sicurezza {
+  --news-glow: #c2410c;
+}
+.news-section--eventi {
+  --news-glow: #1d4ed8;
+}
+.news-section--formazione {
+  --news-glow: #6d28d9;
+}
+.news-section__label {
+  color: var(--news-glow, var(--text));
+}
+.news-section--evidenza .hero-card {
+  border-top-color: var(--news-glow);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--news-glow) 14%, transparent),
+    0 10px 26px color-mix(in srgb, var(--news-glow) 16%, transparent);
+}
+.news-section--cronologiche .comm-item,
+.news-section--informali .comm-item,
+.news-section--rsu .comm-item,
+.news-section--sicurezza .comm-item,
+.news-section--eventi .comm-item,
+.news-section--formazione .comm-item {
+  border-left: 3px solid var(--news-glow);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--news-glow) 10%, transparent),
+    0 8px 20px color-mix(in srgb, var(--news-glow) 12%, transparent);
+}
+.news-section__archivio {
+  display: inline-block;
+  margin-top: 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--news-glow, var(--accent));
+}
+.news-section__archivio:hover {
+  text-decoration: underline;
+}
+
+/* ============================================================
+   Home — widget colonna laterale (riunioni in corso, assenti oggi)
+   ============================================================ */
+.widget {
+  padding: 1.3rem 1.4rem;
+}
+.widget-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.92rem;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+.widget-link:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-lg);
+}
+.widget-link__arrow {
+  color: var(--accent);
+  font-size: 1.1rem;
+  line-height: 1;
+}
+.widget__title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+.widget__empty {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+.widget-assenti__list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+.widget-assenti__item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  font-size: 0.88rem;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid var(--border);
+}
+.widget-assenti__item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.widget-assenti__nome {
+  font-weight: 650;
+}
+
+/* Widget cliccabili per intero: "Riunioni in corso" porta a Prenotazione sale,
+   "Prossimo evento" al Calendario. Non riusano .widget-link qui sopra, che è
+   pensato per un riquadro di una riga sola senza contenuto sotto. */
+.widget--link {
+  display: block;
+  color: var(--text);
+  text-decoration: none;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+.widget--link:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-lg);
+}
+/* Freccia dei widget cliccabili: stessa di .widget-link (widget "Presenze"),
+   spinta a fine riga del titolo — è l'unico indizio che il riquadro si clicca,
+   senza una scritta "vai a…" che ripeterebbe il titolo. */
+.widget__title .widget-link__arrow {
+  margin-left: auto;
+}
+
+/* Widget "Prossimo evento": una sola voce, quella più vicina nel tempo. */
+.widget-evento__corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-size: 0.88rem;
+}
+.widget-evento__quando {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--accent);
+}
+.widget-evento__titolo {
+  font-weight: 650;
+}
+
+/* ============================================================
+   Pulsante matita (modifica contenuti)
+   ============================================================ */
+.edit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px solid var(--border);
+  padding: 0.35rem 0.65rem;
+  border-radius: 8px;
+  transition: background 0.12s ease;
+}
+.edit-btn:hover {
+  background: var(--surface-2);
+}
+.edit-fab {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.7rem;
+  z-index: 2;
+  font-size: 0.85rem;
+  line-height: 1;
+  padding: 0.3rem 0.45rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+  opacity: 0.85;
+}
+.edit-fab:hover {
+  opacity: 1;
+  color: var(--accent);
+}
+.has-fab {
+  position: relative;
+}
+/* Wrapper per le card nelle griglie (mantiene altezze uniformi con la matita) */
+.card-slot {
+  position: relative;
+  display: flex;
+}
+.card-slot > .card {
+  flex: 1;
+  width: 100%;
+}
+
+/* Le mie attività formative: storico a sinistra, form a destra */
+.formazione-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1.75rem;
+  align-items: start;
+}
+@media (max-width: 760px) {
+  .formazione-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+.nav-toggle-checkbox {
+  display: none;
+}
+.nav-toggle-btn,
+.nav-backdrop {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .shell {
+    grid-template-columns: 1fr;
+  }
+  .nav-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 0.75rem;
+    left: 0.75rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    font-size: 1.25rem;
+    cursor: pointer;
+    z-index: 210;
+  }
+  .nav-toggle-checkbox:checked ~ .nav-toggle-btn {
+    display: none;
+  }
+  .nav-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 17, 23, 0.45);
+    z-index: 190;
+  }
+  .nav-toggle-checkbox:checked ~ .nav-backdrop {
+    display: block;
+  }
+  /* Sotto i 760px la sidebar diventa un menu a scomparsa da sinistra,
+     nascosto di default (translateX) e aperto tramite il checkbox in
+     MobileNavToggle (vedi .nav-toggle-checkbox:checked ~ .sidebar). */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: min(82vw, 300px);
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    border-right: 1px solid var(--border);
+    border-bottom: none;
+    transform: translateX(-100%);
+    transition: transform 0.22s ease;
+    z-index: 200;
+    box-shadow: var(--shadow-lg);
+  }
+  .nav-toggle-checkbox:checked ~ .sidebar {
+    transform: translateX(0);
+  }
+  .field--row {
+    grid-template-columns: 1fr;
+  }
+  .rubrica-table {
+    display: block;
+    overflow-x: auto;
+  }
+}
+
+/* ============================================================
+   Rubrica
+   ============================================================ */
+.rubrica-filter {
+  max-width: 420px;
+  margin-bottom: 1.4rem;
+}
+.rubrica-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.rubrica-table th,
+.rubrica-table td {
+  text-align: left;
+  padding: 0.7rem 0.9rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.9rem;
+  vertical-align: middle;
+}
+.rubrica-table thead th {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted-2);
+  background: var(--surface-2);
+}
+.rubrica-table tbody tr:last-child td {
+  border-bottom: none;
+}
+.rubrica-table tbody tr:hover {
+  background: var(--surface-2);
+}
+.rubrica-table__office {
+  background: var(--surface-2);
+  font-weight: 650;
+  font-size: 0.85rem !important;
+  color: var(--accent);
+}
+.rubrica-table__name {
+  font-weight: 600;
+}
+.rubrica-table__int {
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+}
+.rubrica-table a {
+  color: var(--accent);
+}
+
+/* ============================================================
+   Scheda procedura
+   ============================================================ */
+.scheda {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin: 1.25rem 0;
+}
+.scheda__item {
+  padding: 1.1rem 1.2rem;
+}
+.scheda__label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted-2);
+  margin-bottom: 0.35rem;
+}
+.scheda__value {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+.scheda__value--muted {
+  font-weight: 500;
+  color: var(--muted);
+}
+
+/* ============================================================
+   Picker con ricerca (ReferentePicker, UfficioPicker) — dropdown
+   compatto di suggerimenti sotto un input di testo
+   ============================================================ */
+.picker-dropdown {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  margin: 0;
+  padding: 0.25rem 0;
+  list-style: none;
+  box-shadow: var(--shadow-lg);
+  max-height: 14rem;
+  overflow-y: auto;
+}
+.picker-opt {
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  transition: background 0.1s ease;
+}
+.picker-opt:hover {
+  background: var(--surface-2);
+}
+.picker-opt--empty {
+  cursor: default;
+  color: var(--muted);
+}
+.picker-opt--empty:hover {
+  background: none;
+}
+/* Gerarchia Area > Settore > Ufficio nel picker uffici: indentazione inline
+   (dipende dalla profondità, calcolata in JS), qui solo il peso/colore. */
+.picker-opt--area {
+  font-weight: 700;
+}
+.picker-opt--settore {
+  font-weight: 600;
+  color: var(--muted);
+}
+.picker-opt--ufficio {
+  font-weight: 400;
+}
+
+/* Chip rimovibili per la selezione multipla di uffici (UfficiMultiPicker) */
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  padding: 0.3rem 0.4rem 0.3rem 0.7rem;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.chip__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  border: none;
+  border-radius: 999px;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 0.7rem;
+  line-height: 1;
+  padding: 0;
+}
+.chip__remove:hover {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+/* ============================================================
+   Editor modulo — stile Google Moduli (titolo + domande inline,
+   un solo Salva per l'intero modulo)
+   ============================================================ */
+.modulo-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  margin-bottom: 1.75rem;
+}
+.modulo-editor__header {
+  padding: 1.5rem 1.6rem;
+  border-top: 4px solid var(--accent);
+}
+.modulo-editor__tipo {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.2rem;
+}
+.modulo-tipo-opt {
+  flex: 1;
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  text-align: left;
+  padding: 0.9rem 1rem;
+  background: var(--surface-2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  font-family: inherit;
+  color: var(--text);
+}
+.modulo-tipo-opt:hover {
+  border-color: var(--accent);
+}
+.modulo-tipo-opt.is-active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+.modulo-tipo-opt strong {
+  font-size: 0.95rem;
+}
+.modulo-editor__titolo {
+  display: block;
+  width: 100%;
+  font-family: inherit;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--border);
+  border-radius: 0;
+  padding: 0.5rem 0.1rem;
+}
+.modulo-editor__titolo:focus {
+  outline: none;
+  border-bottom-color: var(--accent);
+}
+.modulo-editor__descrizione {
+  margin-top: 0.6rem;
+}
+.modulo-editor__meta {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-top: 1.2rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--border);
+}
+.modulo-editor__meta .field {
+  flex: 1;
+  min-width: 220px;
+}
+.modulo-editor__domande {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+.modulo-editor__save {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-top: 0.2rem;
+}
+
+.campo-card {
+  padding: 1.2rem 1.4rem;
+  display: flex;
+  gap: 0.85rem;
+  cursor: default;
+  transition: box-shadow 0.15s ease;
+}
+.campo-card:hover {
+  box-shadow: var(--shadow);
+}
+.campo-card__handle {
+  flex-shrink: 0;
+  color: var(--muted-2);
+  font-size: 1.1rem;
+  line-height: 1.6;
+  cursor: grab;
+}
+.campo-card__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+.campo-card__row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+.campo-card__row .input {
+  flex: 1;
+  min-width: 0;
+}
+.campo-card__tipo {
+  width: 230px;
+  flex-shrink: 0;
+}
+
+.campo-opzioni {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+.campo-opzione {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.campo-opzione__bullet {
+  flex-shrink: 0;
+  width: 1.1rem;
+  text-align: center;
+  color: var(--muted-2);
+}
+.campo-opzione .input {
+  flex: 1;
+  min-width: 0;
+}
+.campo-opzione__remove {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted-2);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.campo-opzione__remove:hover {
+  background: var(--off-soft);
+  color: var(--off);
+}
+.campo-add-opzione {
+  align-self: flex-start;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem 0.15rem;
+  margin-left: 1.7rem;
+}
+.campo-add-opzione:hover {
+  text-decoration: underline;
+}
+
+.campo-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--border);
+}
+.campo-card__foot-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+.icon-btn {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.icon-btn:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+.icon-btn--danger:hover {
+  background: var(--off-soft);
+  color: var(--off);
+}
+
+.campo-add-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  font-family: inherit;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: transparent;
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+.campo-add-card:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+/* ============================================================
+   RichTextEditor — toolbar + area contentEditable (descrizione modulo,
+   blocchi "testo informativo")
+   ============================================================ */
+.rte {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  overflow: hidden;
+}
+.rte:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.rte__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.3rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+/* Separatore fra i gruppi di comandi (titolo | stile | elenchi | allineamento |
+   inserimenti): con una dozzina di pulsanti la barra diventa illeggibile se
+   sono tutti equidistanti. */
+.rte__sep {
+  width: 1px;
+  align-self: stretch;
+  margin: 0.15rem 0.2rem;
+  /* currentColor smorzato e non var(--border): il bordo della skin Aurora è
+     quasi bianco e su questa barra sparirebbe. */
+  background: currentColor;
+  opacity: 0.18;
+}
+.rte__btn {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.rte__btn:hover {
+  background: var(--surface);
+  color: var(--text);
+}
+.rte__btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.rte__area {
+  padding: 0.6rem 0.75rem;
+  font-family: inherit;
+  font-size: 0.92rem;
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 90px;
+  outline: none;
+}
+.rte__area p,
+.rte__area div {
+  margin: 0 0 0.6em;
+}
+.rte__area ul,
+.rte__area ol {
+  margin: 0 0 0.6em;
+  padding-left: 1.4em;
+}
+.rte__area h2,
+.rte__area h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0 0 0.5em;
+}
+/* L'immagine appena inserita è spesso una foto a piena risoluzione: senza
+   questo vincolo sfonderebbe il riquadro dell'editor. */
+.rte__area img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+}
+.rte__area:empty:before {
+  content: attr(data-placeholder);
+  color: var(--muted-2);
+}
+
+@media (max-width: 760px) {
+  .campo-card__row {
+    flex-direction: column;
+  }
+  .campo-card__tipo {
+    width: 100%;
+  }
+  .modulo-editor__meta {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* ============================================================
+   Statistiche risposte modulo (stile "Riepilogo" Google Moduli)
+   ============================================================ */
+.stat-domande {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  max-width: 760px;
+}
+.stat-domanda {
+  padding: 1.4rem 1.6rem;
+}
+.stat-domanda__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.1rem;
+}
+.stat-domanda__head h2 {
+  font-size: 1.05rem;
+  font-weight: 650;
+}
+.stat-barre {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+.stat-barra__label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  margin-bottom: 0.35rem;
+}
+.stat-barra__track {
+  background: var(--surface-2);
+  border-radius: 999px;
+  height: 10px;
+  overflow: hidden;
+}
+.stat-barra__fill {
+  background: var(--accent);
+  height: 100%;
+  border-radius: 999px;
+}
+.stat-risposte-testo {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 280px;
+  overflow-y: auto;
+}
+.stat-risposte-testo li {
+  padding: 0.55rem 0.75rem;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+}
+
+/* ============================================================
+   Calendario (Presenze e Assenze)
+   ============================================================ */
+.calendar__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.9rem;
+}
+.calendar__title {
+  font-weight: 650;
+  font-size: 1rem;
+}
+.calendar__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.4rem;
+}
+.calendar__grid--head {
+  margin-bottom: 0.35rem;
+}
+.calendar__weekday {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted-2);
+  text-transform: uppercase;
+}
+.calendar__day {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+.calendar__day:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+.calendar__day:disabled {
+  cursor: not-allowed;
+  color: var(--muted-2);
+}
+.calendar__day--empty {
+  background: none;
+  border: none;
+  cursor: default;
+}
+.calendar__day--assente {
+  background: var(--off-soft);
+  border-color: var(--off-soft);
+  color: var(--off);
+}
+.calendar__day--smartworking {
+  background: var(--warn-soft);
+  border-color: var(--warn-soft);
+  color: var(--warn);
+}
+.calendar__day--selezionato {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+/* Mini-calendario a comparsa per il filtro data del box "È presente?"
+   (sostituisce l'<input type="date"> nativo, il cui popup non è
+   personalizzabile): stessa struttura .calendar__* del calendario di
+   "Le mie assenze", solo racchiusa in un pannello posizionato assolutamente. */
+.date-picker__popover {
+  position: absolute;
+  top: calc(100% + 0.3rem);
+  left: 0;
+  z-index: 20;
+  width: 280px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+  padding: 0.9rem;
+}
+
+/* ============================================================
+   Calendario eventi (/calendario)
+   Riusa la griglia .calendar__grid del calendario di Presenze, ma con celle
+   alte a sufficienza per elencare gli eventi del giorno: le celle non sono
+   quindi .calendar__day (quadrate, contenuto centrato) ma .cal-giorno.
+   ============================================================ */
+.cal-barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.9rem;
+}
+.cal-legenda {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.cal-legenda__voce {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.cal-giorno {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.2rem;
+  min-height: 5.4rem;
+  padding: 0.35rem;
+  font-family: inherit;
+  font-size: 0.9rem;
+  text-align: left;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  overflow: hidden;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+.cal-giorno:hover {
+  border-color: var(--accent);
+}
+.cal-giorno--vuoto {
+  background: none;
+  border: none;
+  cursor: default;
+}
+.cal-giorno--passato {
+  color: var(--muted-2);
+  background: none;
+}
+.cal-giorno--oggi {
+  border-color: var(--accent);
+}
+.cal-giorno--selezionato {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.cal-giorno__num {
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+.cal-giorno--oggi .cal-giorno__num {
+  color: var(--accent);
+}
+.cal-giorno__altri {
+  font-size: 0.68rem;
+  color: var(--muted);
+}
+/* Riga-evento dentro la cella del giorno: una sola riga, troncata — il testo
+   completo si legge nel pannello del giorno, cliccando la cella. */
+.cal-pill {
+  display: block;
+  /* Nella griglia è un <button> (cliccarla apre quell'evento già espanso nel
+     pannello del giorno), nella legenda è uno <span>: i reset qui sotto servono
+     al primo caso e non toccano il secondo. */
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  border: none;
+  cursor: pointer;
+  font-size: 0.68rem;
+  line-height: 1.35;
+  font-weight: 600;
+  padding: 0.1rem 0.3rem;
+  border-radius: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cal-giorno .cal-pill:hover {
+  filter: brightness(1.12);
+}
+
+/* Riga-evento nel pannello del giorno: intestazione cliccabile (orario, titolo,
+   luogo e anteprima su una riga sola) che si apre sul testo completo della
+   descrizione — stesso schema details/summary delle segnalazioni ricevute. */
+.cal-evento__sommario {
+  cursor: pointer;
+}
+.cal-evento__dettaglio {
+  margin-top: 0.7rem;
+}
+.cal-evento__testo {
+  white-space: pre-wrap;
+  font-size: 0.9rem;
+  margin-bottom: 0.7rem;
+}
+.cal-pill--evento {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.cal-pill--comunicazione {
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+/* Quadratino di colore nella legenda: stessa classe delle righe-evento, senza
+   testo, così i colori mostrati non possono divergere da quelli reali. */
+.cal-pill--campione {
+  width: 1.1rem;
+  height: 0.7rem;
+  padding: 0;
+}
+@media (max-width: 760px) {
+  /* Su schermo stretto una colonna del mese è larga poche decine di pixel: il
+     titolo dell'evento sarebbe solo puntini di sospensione. Nelle celle resta
+     una barretta colorata per evento (il colore distingue comunque le due
+     provenienze), il dettaglio si legge toccando il giorno. La legenda, che
+     usa le stesse classi ma fuori dalla griglia, non è toccata. */
+  .cal-giorno {
+    min-height: 3.4rem;
+    padding: 0.25rem 0.2rem;
+  }
+  .cal-giorno .cal-pill {
+    font-size: 0;
+    height: 5px;
+    padding: 0;
+    border-radius: 3px;
+  }
+  .cal-giorno__altri {
+    font-size: 0.6rem;
+  }
+}
+
+/* Prenotazione sale: griglia delle 4 sale nel primo step del wizard. */
+.sala-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.9rem;
+}
+.sala-card {
+  padding: 1.4rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 600;
+  font-size: 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.sala-card:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+/* Prenotazione sale: calendario settimanale (giorni x ore) nello step "Quando?". */
+.sale-settimana__nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+.sale-settimana {
+  border-collapse: collapse;
+  width: 100%;
+}
+.sale-settimana th,
+.sale-settimana td {
+  border: 1px solid var(--border);
+  padding: 0.4rem 0.6rem;
+  text-align: center;
+  font-size: 0.82rem;
+}
+.sale-settimana th.sale-settimana__ora {
+  font-weight: 400;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.sale-settimana th.sale-settimana__giorno {
+  color: var(--text);
+}
+.sale-settimana td.libera {
+  cursor: pointer;
+}
+.sale-settimana td.libera:hover {
+  background: var(--accent-soft);
+}
+.sale-settimana td.selezionata {
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+.sale-settimana td.occupata {
+  background: var(--off-soft);
+  cursor: not-allowed;
+}
+.sale-settimana td.passata {
+  background: var(--surface-2);
+  color: var(--muted-2);
+  cursor: not-allowed;
+}
+/* Blocco impostato dall'admin (sala specifica o intero calendario, vedi
+   /admin/prenotazioni-sale): pattern a righe diagonali per distinguerlo a colpo
+   d'occhio sia dalle celle occupate (rosse) sia da quelle passate (grigio pieno). */
+.sale-settimana td.bloccata {
+  background: repeating-linear-gradient(
+    45deg,
+    var(--surface-2),
+    var(--surface-2) 6px,
+    var(--off-soft) 6px,
+    var(--off-soft) 12px
+  );
+  color: var(--muted-2);
+  cursor: not-allowed;
+}
+
+/* Riepilogo delle ore scelte nel calendario settimanale, subito sotto la
+   tabella: stesso accento (accent-soft/accent) delle celle .selezionata sopra,
+   così il legame click-cella -> chip qui sotto è immediato. Chip riusa
+   .chip/.chip-row già definiti sopra (UfficiMultiPicker), qui rimuovono
+   un'intera fascia invece di un singolo ufficio. */
+.selezione-riepilogo {
+  margin-top: 1rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+.selezione-riepilogo__titolo {
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-bottom: 0.55rem;
+}
+
+/* Opzioni "Mi serve assistenza..." nello step di conferma: card selezionabili,
+   stesso linguaggio visivo di .sala-card (bordo + accent-soft al passaggio) e
+   delle celle .selezionata del calendario sopra, per coerenza nel wizard. */
+.assistenza-opzioni {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+/* Specificità .assistenza-opzioni + .assistenza-opzione (invece della sola
+   .assistenza-opzione) per battere ".field label" (usato per l'etichetta
+   "Serve altro?" che le contiene): altrimenti font-size/weight/color di
+   quella regola più generica vincerebbero sulle label delle singole opzioni. */
+.assistenza-opzioni .assistenza-opzione {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  width: fit-content;
+}
+.assistenza-opzioni .assistenza-opzione:hover {
+  border-color: var(--accent);
+}
+.assistenza-opzioni .assistenza-opzione input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+}
+.assistenza-opzioni .assistenza-opzione:has(input:checked) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+/* Box "cosa ti serve": nascosto finché il checkbox del blocco non è spuntato
+   (CSS puro via :has, nessuno stato React aggiuntivo) — resta comunque nel DOM
+   e viene azzerato lato server se il flag non è attivo (vedi actions.ts). */
+.assistenza-dettaglio {
+  display: none;
+  margin-top: 0.5rem;
+  max-width: 420px;
+}
+.assistenza-blocco:has(input:checked) .assistenza-dettaglio {
+  display: block;
+}
+
+/* Checkbox "Pubblica anche una comunicazione ufficiale" in Procedure/Moduli/
+   Guide (solo in creazione): stesso principio CSS-puro di .assistenza-blocco
+   sopra, generalizzato per essere riusato nei tre form. */
+.notizia-blocco {
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.9rem 1rem;
+  margin: 0.5rem 0 1.1rem;
+}
+.notizia-dettaglio {
+  display: none;
+  margin-top: 0.8rem;
+  max-width: 420px;
+}
+.notizia-blocco:has(input:checked) .notizia-dettaglio {
+  display: block;
+}
+
+/* Tabella persone × giorni del filtro "per periodo" in "È presente?": nomi
+   fissi a sinistra, un bollino colorato per giorno nelle colonne. */
+.presenza-tabella-wrap {
+  overflow-x: auto;
+}
+.presenza-tabella {
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+.presenza-tabella th,
+.presenza-tabella td {
+  padding: 0.4rem 0.5rem;
+  text-align: center;
+}
+.presenza-tabella__settimana {
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--muted-2);
+  text-transform: uppercase;
+}
+.presenza-tabella th {
+  font-weight: 600;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+}
+.presenza-tabella__nome {
+  text-align: left !important;
+  white-space: nowrap;
+  padding-right: 1rem !important;
+}
+.presenza-tabella tbody tr:not(:last-child) td {
+  border-bottom: 1px solid var(--border);
+}
+.presenza-dot {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+}
+.presenza-dot--assente {
+  background: var(--off);
+  border-color: var(--off);
+}
+.presenza-dot--smartworking {
+  background: var(--warn);
+  border-color: var(--warn);
+}
+.presenza-dot--presente {
+  background: transparent;
+}
+/* Colonna del giorno odierno: stesso accento (--accent-soft) di
+   .cal-giorno--oggi, applicato a th/td dell'intera colonna. */
+.presenza-tabella__oggi {
+  background: var(--accent-soft);
+}
+.presenza-tabella th.presenza-tabella__oggi {
+  color: var(--accent);
+}
+
+/* ============================================================
+   Ricerca a comparsa su un nominativo (Presenze e Assenze)
+   ============================================================ */
+.autocomplete {
+  position: relative;
+}
+.autocomplete__list {
+  position: absolute;
+  top: calc(100% + 0.3rem);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+  max-height: 260px;
+  overflow-y: auto;
+  list-style: none;
+  padding: 0.35rem;
+}
+.autocomplete__item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem 0.6rem;
+  border: none;
+  background: none;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: var(--text);
+  cursor: pointer;
+}
+.autocomplete__item:hover {
+  background: var(--surface-2);
+}
+

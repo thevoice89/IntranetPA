@@ -1,0 +1,566 @@
+/* ============================================================
+   Skin "Aurora" — grafica PREDEFINITA dal 2026-07-27 (glass +
+   gradiente pastello pesca/azzurro, angoli morbidi, accento
+   arancione).
+
+   Non riscrive globals.css: tutte le regole sono annidate sotto
+   [data-skin="aurora"] sulla radice, attributo fisso nel markup di
+   <html> (vedi src/app/layout.tsx) — unica grafica, nessun selettore
+   per tornare alla precedente.
+
+   Questo foglio è importato DOPO globals.css, quindi a parità di
+   specificità vince sulle regole di base.
+   ============================================================ */
+
+:root[data-skin="aurora"] {
+  --bg: #f4f1ec;
+  --surface: rgba(255, 255, 255, 0.72);
+  --surface-2: rgba(255, 255, 255, 0.5);
+  --border: rgba(255, 255, 255, 0.75);
+  --text: #1d2430;
+  --muted: #5d6675;
+  --muted-2: #8b95a5;
+
+  --accent: #2f6fb8;
+  --accent-hover: #245a97;
+  --accent-soft: rgba(47, 111, 184, 0.12);
+
+  /* Accento caldo per le azioni principali (il pulsante arancione
+     del mockup): non esiste nella skin di base, serve solo qui. */
+  --cta: #ef8a37;
+  --cta-hover: #dd7620;
+
+  --ok: #1a8f5f;
+  --ok-soft: rgba(26, 143, 95, 0.12);
+  --warn: #b57517;
+  --warn-soft: rgba(181, 117, 23, 0.14);
+  --off: #d0453f;
+  --off-soft: rgba(208, 69, 63, 0.12);
+
+  --radius: 20px;
+  --radius-sm: 13px;
+  --shadow-sm: 0 2px 10px rgba(70, 100, 145, 0.07);
+  --shadow: 0 10px 30px rgba(70, 100, 145, 0.12);
+  --shadow-lg: 0 20px 50px rgba(70, 100, 145, 0.18);
+
+  --glass-blur: saturate(160%) blur(16px);
+}
+
+/* Variante scura della skin: stesso impianto, atmosfera notturna */
+:root[data-theme="dark"][data-skin="aurora"] {
+  --bg: #0e131d;
+  --surface: rgba(30, 38, 54, 0.72);
+  --surface-2: rgba(40, 50, 70, 0.55);
+  --border: rgba(255, 255, 255, 0.09);
+  --text: #e9edf5;
+  --muted: #a6b0c2;
+  --muted-2: #78849a;
+  --accent: #74a9ea;
+  --accent-hover: #9cc4f5;
+  --accent-soft: rgba(116, 169, 234, 0.16);
+  --cta: #f0913f;
+  --cta-hover: #ffa758;
+  --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.35);
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.55);
+}
+
+/* ------------------------------------------------------------
+   Sfondo: gradienti sovrapposti su un layer fisso, così non
+   scorre con il contenuto e non va ridisegnato.
+   ------------------------------------------------------------ */
+:root[data-skin="aurora"] body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(1100px 720px at -8% -12%, #fadfc2 0%, rgba(250, 223, 194, 0) 62%),
+    radial-gradient(950px 620px at 104% 8%, #cde2f6 0%, rgba(205, 226, 246, 0) 64%),
+    radial-gradient(1000px 820px at 88% 112%, #f8dcbe 0%, rgba(248, 220, 190, 0) 60%),
+    linear-gradient(158deg, #f7f2eb 0%, #eef3fa 46%, #f4ece4 100%);
+}
+:root[data-theme="dark"][data-skin="aurora"] body::before {
+  background:
+    radial-gradient(1100px 720px at -8% -12%, #3a2a3f 0%, rgba(58, 42, 63, 0) 62%),
+    radial-gradient(950px 620px at 104% 8%, #1b3450 0%, rgba(27, 52, 80, 0) 64%),
+    radial-gradient(1000px 820px at 88% 112%, #3d2c22 0%, rgba(61, 44, 34, 0) 60%),
+    linear-gradient(158deg, #101725 0%, #0d1420 50%, #141119 100%);
+}
+
+[data-skin="aurora"] body {
+  background: transparent;
+}
+
+/* ------------------------------------------------------------
+   Sidebar in vetro
+   ------------------------------------------------------------ */
+[data-skin="aurora"] .sidebar {
+  background: rgba(255, 255, 255, 0.55);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border-right: 1px solid rgba(255, 255, 255, 0.6);
+  padding: 1.1rem 0.8rem;
+}
+[data-theme="dark"][data-skin="aurora"] .sidebar {
+  background: rgba(20, 27, 40, 0.6);
+  border-right-color: rgba(255, 255, 255, 0.07);
+}
+
+[data-skin="aurora"] .brand-logo-wrap {
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(70, 100, 145, 0.1);
+}
+
+/* Bagliore caldo dietro lo stemma in sidebar (stessa idea già provata nel
+   riquadro titolo prima di spostare lo stemma qui): un cerchio sfumato
+   centrato dietro l'immagine, per farlo risaltare sul vetro della sidebar. */
+[data-skin="aurora"] .sidebar__brand--crest {
+  background: radial-gradient(circle, rgba(239, 138, 55, 0.32) 0%, rgba(239, 138, 55, 0) 70%);
+  background-size: 180px 180px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+[data-theme="dark"][data-skin="aurora"] .sidebar__brand--crest {
+  background-image: radial-gradient(circle, rgba(240, 145, 63, 0.28) 0%, rgba(240, 145, 63, 0) 70%);
+}
+
+/* Voci di menu: icona dentro un chip azzurro arrotondato, come nel
+   blocco "Accesso rapido" del mockup. */
+[data-skin="aurora"] .nav-link {
+  border-radius: 12px;
+  padding: 0.5rem 0.65rem;
+  gap: 0.6rem;
+}
+[data-skin="aurora"] .nav-link__icon {
+  width: 1.9rem;
+  height: 1.9rem;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: 9px;
+  background: rgba(47, 111, 184, 0.1);
+  font-size: 0.95rem;
+  transition: background 0.12s ease;
+}
+[data-theme="dark"][data-skin="aurora"] .nav-link__icon {
+  background: rgba(116, 169, 234, 0.14);
+}
+[data-skin="aurora"] .nav-link:hover {
+  background: rgba(255, 255, 255, 0.75);
+}
+[data-theme="dark"][data-skin="aurora"] .nav-link:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+[data-skin="aurora"] .nav-link--active {
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--accent);
+  box-shadow: 0 2px 10px rgba(70, 100, 145, 0.1);
+}
+[data-theme="dark"][data-skin="aurora"] .nav-link--active {
+  background: rgba(116, 169, 234, 0.16);
+}
+[data-skin="aurora"] .nav-link--active .nav-link__icon {
+  background: rgba(47, 111, 184, 0.18);
+}
+
+/* La ricerca perde il bordo verde acido della skin di base.
+   Selettore volutamente più specifico (.input.input--search) perché più sotto
+   le regole generiche su .input verrebbero altrimenti dopo queste e ne
+   sovrascriverebbero l'ombra. */
+[data-skin="aurora"] .input.input--search {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 999px;
+  box-shadow: 0 2px 10px rgba(70, 100, 145, 0.1);
+  padding: 0.6rem 1.05rem;
+}
+[data-theme="dark"][data-skin="aurora"] .input.input--search {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: none;
+}
+[data-skin="aurora"] .input.input--search:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+}
+
+/* La ricerca torna in sidebar su tutte le pagine tranne la home (che ha il
+   proprio riquadro nel corpo, vedi .home-search più sotto): qui, senza il
+   riquadro dedicato a farla notare, le serve un contorno acceso per restare
+   visibile — stesso arancione della CTA, non il verde acido della skin base. */
+[data-skin="aurora"] .sidebar__search--glow .input.input--search {
+  border-color: var(--cta);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cta) 22%, transparent),
+    0 0 14px color-mix(in srgb, var(--cta) 35%, transparent);
+}
+[data-skin="aurora"] .sidebar__search--glow .input.input--search:focus {
+  border-color: var(--cta);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--cta) 30%, transparent),
+    0 0 18px color-mix(in srgb, var(--cta) 45%, transparent);
+}
+
+/* ------------------------------------------------------------
+   Header di pagina come banner di benvenuto
+   ------------------------------------------------------------ */
+[data-skin="aurora"] .page-header {
+  position: relative;
+  overflow: hidden;
+  padding: 2rem 2.2rem;
+  margin-bottom: 1.9rem;
+  border-radius: 22px;
+  background:
+    linear-gradient(105deg, rgba(255, 255, 255, 0.88) 0%, rgba(255, 255, 255, 0.6) 55%, rgba(255, 255, 255, 0.28) 100%),
+    radial-gradient(600px 300px at 100% 0%, rgba(238, 170, 105, 0.35) 0%, rgba(238, 170, 105, 0) 70%),
+    radial-gradient(600px 340px at 78% 120%, rgba(120, 175, 230, 0.35) 0%, rgba(120, 175, 230, 0) 72%);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow: var(--shadow);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+}
+[data-theme="dark"][data-skin="aurora"] .page-header {
+  background:
+    linear-gradient(105deg, rgba(30, 40, 58, 0.9) 0%, rgba(30, 40, 58, 0.6) 55%, rgba(30, 40, 58, 0.3) 100%),
+    radial-gradient(600px 300px at 100% 0%, rgba(238, 150, 80, 0.22) 0%, rgba(238, 150, 80, 0) 70%),
+    radial-gradient(600px 340px at 78% 120%, rgba(90, 150, 220, 0.25) 0%, rgba(90, 150, 220, 0) 72%);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+[data-skin="aurora"] .page-header h1 {
+  font-size: 2rem;
+  letter-spacing: -0.02em;
+}
+[data-skin="aurora"] .page-header p {
+  font-size: 1rem;
+  max-width: 60ch;
+}
+
+/* ------------------------------------------------------------
+   Ricerca nel corpo della home
+   ------------------------------------------------------------ */
+[data-skin="aurora"] .home-search {
+  border-radius: 999px;
+  padding: 0.55rem 0.6rem 0.55rem 1.3rem;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 10px rgba(70, 100, 145, 0.1);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+}
+[data-theme="dark"][data-skin="aurora"] .home-search {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: none;
+}
+[data-skin="aurora"] .home-search:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+}
+
+/* ------------------------------------------------------------
+   Card in vetro
+   ------------------------------------------------------------ */
+[data-skin="aurora"] .card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  /* backdrop-filter apre un nuovo stacking context: senza z-index esplicito,
+     un dropdown assoluto (autocomplete/picker) generato dentro questa card
+     resta intrappolato sotto la card successiva nel markup, che ha a sua
+     volta il proprio stacking context. :focus-within solleva la card che
+     contiene il campo attivo sopra le altre finché il menu è aperto. */
+  position: relative;
+  z-index: 0;
+}
+[data-skin="aurora"] .card:hover {
+  box-shadow: var(--shadow);
+}
+[data-skin="aurora"] .card:focus-within {
+  z-index: 5;
+}
+
+[data-skin="aurora"] .hero-card {
+  border-left: none;
+  border-top: 3px solid var(--cta);
+  padding: 1.5rem 1.7rem;
+}
+[data-skin="aurora"] .hero-card__label {
+  color: var(--cta);
+}
+
+/* Bagliori per sezione nella home (in evidenza/cronologiche/informali, vedi
+   globals.css .news-section--*): la skin aurora ridefinisce già `.card` e
+   `.hero-card` con la stessa specificità di quelle regole (attributo+classe) e
+   vince a parità perché questo foglio è caricato dopo — senza queste regole
+   qui, il colore per sezione sparirebbe sempre sotto aurora. Stessa variabile
+   --news-glow definita in globals.css, letta per ereditarietà. */
+[data-skin="aurora"] .news-section--evidenza .hero-card {
+  border-top-color: var(--news-glow);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--news-glow) 18%, transparent),
+    0 10px 26px color-mix(in srgb, var(--news-glow) 20%, transparent);
+}
+[data-skin="aurora"] .news-section--cronologiche .comm-item,
+[data-skin="aurora"] .news-section--informali .comm-item {
+  border-left: 3px solid var(--news-glow);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--news-glow) 12%, transparent),
+    0 8px 20px color-mix(in srgb, var(--news-glow) 14%, transparent);
+}
+
+[data-skin="aurora"] .stat {
+  padding: 1.3rem 1.4rem;
+}
+[data-skin="aurora"] .stat__value {
+  background: linear-gradient(120deg, var(--accent), var(--cta));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+[data-skin="aurora"] .quick-card:hover,
+[data-skin="aurora"] .service-card:hover,
+[data-skin="aurora"] .comm-item:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow);
+  border-color: rgba(255, 255, 255, 0.95);
+}
+[data-theme="dark"][data-skin="aurora"] .quick-card:hover,
+[data-theme="dark"][data-skin="aurora"] .service-card:hover,
+[data-theme="dark"][data-skin="aurora"] .comm-item:hover {
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+[data-skin="aurora"] .service-card__icon {
+  border-radius: 14px;
+  background: rgba(47, 111, 184, 0.1);
+  border: none;
+}
+[data-theme="dark"][data-skin="aurora"] .service-card__icon {
+  background: rgba(116, 169, 234, 0.14);
+}
+
+/* Moduli "documento" (vedi globals.css .service-card--documento/.admin-row--documento):
+   stessa logica delle sezioni comunicazioni sopra — [data-skin="aurora"] .card
+   ha già specificità attributo+classe e ridefinisce border/background, quindi
+   senza questa regola qui il bordo verde di differenziazione sparirebbe sotto
+   aurora (stessa specificità, ma il selettore di base è caricato prima). */
+[data-skin="aurora"] .service-card--documento {
+  border-left: 3px solid var(--ok);
+}
+[data-skin="aurora"] .service-card--documento .service-card__icon {
+  background: var(--ok-soft);
+}
+[data-skin="aurora"] .admin-row--documento {
+  border-left: 3px solid var(--ok);
+}
+
+[data-skin="aurora"] .section-label {
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  margin: 1.6rem 0 0.9rem;
+}
+
+/* ------------------------------------------------------------
+   Bottoni: il primario è arancione, come la CTA del mockup
+   ------------------------------------------------------------ */
+[data-skin="aurora"] .btn {
+  border-radius: 999px;
+  padding: 0.6rem 1.2rem;
+}
+[data-skin="aurora"] .btn--primary {
+  background: linear-gradient(135deg, var(--cta), var(--cta-hover));
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(239, 138, 55, 0.32);
+}
+[data-skin="aurora"] .btn--primary:hover {
+  background: linear-gradient(135deg, var(--cta-hover), var(--cta-hover));
+}
+[data-skin="aurora"] .btn--ghost {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(255, 255, 255, 0.9);
+}
+[data-theme="dark"][data-skin="aurora"] .btn--ghost {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+[data-skin="aurora"] .btn--sm {
+  padding: 0.4rem 0.85rem;
+}
+
+[data-skin="aurora"] .badge,
+[data-skin="aurora"] .status,
+[data-skin="aurora"] .chip {
+  backdrop-filter: none;
+}
+
+/* ------------------------------------------------------------
+   Form, tabelle, tab
+   ------------------------------------------------------------ */
+[data-skin="aurora"] .input,
+[data-skin="aurora"] .textarea,
+[data-skin="aurora"] .select,
+[data-skin="aurora"] .rte {
+  /* Un riempimento bianco (a qualunque alpha) sopra una card già "vetro" quasi
+     bianca (--surface è rgba(255,255,255,0.72)) resta comunque quasi bianco
+     puro per compositing: bianco-su-quasi-bianco non genera contrasto
+     visibile, a prescindere da quanto trasparente lo si renda — il campo
+     legge come un riquadro bianco piatto. Serve un colore proprio (non solo
+     alpha) perché il contrasto sia garantito indipendentemente da cosa c'è
+     dietro: qui una tinta azzurra pallida, coerente con --accent. */
+  background: rgba(224, 235, 250, 0.55);
+  border-color: rgba(70, 100, 145, 0.22);
+  box-shadow: inset 0 1px 3px rgba(70, 100, 145, 0.08);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+}
+[data-theme="dark"][data-skin="aurora"] .input,
+[data-theme="dark"][data-skin="aurora"] .textarea,
+[data-theme="dark"][data-skin="aurora"] .select,
+[data-theme="dark"][data-skin="aurora"] .rte {
+  /* background-color, non lo shorthand "background": quest'ultimo azzererebbe
+     anche il gradiente della freccetta impostato più sotto per .select (qui la
+     specificità è più alta per via di [data-theme="dark"], quindi vincerebbe
+     comunque sull'ordine nel file). */
+  background-color: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: none;
+}
+[data-skin="aurora"] .input:focus,
+[data-skin="aurora"] .textarea:focus,
+[data-skin="aurora"] .select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+}
+
+/* <select> nativo: il browser dipinge la casella con uno sfondo opaco proprio
+   attorno alla freccetta indipendentemente dal background-color impostato
+   sopra, che quindi resta un riquadro bianco piatto contro il vetro delle
+   card. appearance:none toglie il rendering nativo (freccetta compresa) così
+   lo sfondo semitrasparente sopra si vede su tutta la casella; la freccetta è
+   ridisegnata a mano con un gradiente. */
+[data-skin="aurora"] .select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+    linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+  background-position: calc(100% - 20px) center, calc(100% - 15px) center;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 2.2rem;
+}
+
+/* Il menu a comparsa con le opzioni resta quello nativo del sistema
+   operativo: nessun CSS può applicargli sfumato/vetro. MA Chromium applica
+   comunque il background-color dichiarato sul <select> anche a quel popup —
+   ed essendo un livello separato (una finestra del sistema operativo, non
+   parte della pagina), un colore semitrasparente lì mostra quello che sta
+   dietro la finestra del browser (desktop, altre finestre), non lo sfondo
+   della pagina: da qui i colori estranei osservati (2026-07-28). Le opzioni
+   devono avere un colore proprio e OPACO per evitare la trasparenza verso il
+   desktop; qui il colore pieno del tema, senza alpha. */
+[data-skin="aurora"] .select option {
+  background-color: #eef3fb;
+  color: var(--text);
+}
+[data-theme="dark"][data-skin="aurora"] .select option {
+  background-color: #1c2230;
+}
+
+[data-skin="aurora"] .rubrica-table,
+[data-skin="aurora"] .tabs,
+[data-skin="aurora"] .picker-dropdown,
+[data-skin="aurora"] .autocomplete__list {
+  background: var(--surface);
+  border-color: var(--border);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+}
+[data-skin="aurora"] .rubrica-table {
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+[data-skin="aurora"] .rubrica-table th,
+[data-skin="aurora"] .rubrica-table td {
+  border-bottom-color: rgba(120, 145, 180, 0.14);
+}
+[data-theme="dark"][data-skin="aurora"] .rubrica-table th,
+[data-theme="dark"][data-skin="aurora"] .rubrica-table td {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+[data-skin="aurora"] .rubrica-table thead th,
+[data-skin="aurora"] .rubrica-table__office {
+  background: rgba(255, 255, 255, 0.55);
+}
+[data-theme="dark"][data-skin="aurora"] .rubrica-table thead th,
+[data-theme="dark"][data-skin="aurora"] .rubrica-table__office {
+  background: rgba(255, 255, 255, 0.05);
+}
+[data-skin="aurora"] .rubrica-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.7);
+}
+[data-theme="dark"][data-skin="aurora"] .rubrica-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+[data-skin="aurora"] .tabs {
+  border-radius: 999px;
+  padding: 0.3rem;
+}
+[data-skin="aurora"] .tab {
+  border-radius: 999px;
+  padding: 0.35rem 0.95rem;
+}
+[data-skin="aurora"] .tab--active {
+  background: #fff;
+  color: var(--accent);
+  box-shadow: 0 2px 8px rgba(70, 100, 145, 0.12);
+}
+[data-theme="dark"][data-skin="aurora"] .tab--active {
+  background: rgba(116, 169, 234, 0.18);
+  box-shadow: none;
+}
+
+[data-skin="aurora"] .login-card {
+  border-radius: 24px;
+  box-shadow: var(--shadow-lg);
+}
+
+[data-skin="aurora"] .font-size-control__btn {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(255, 255, 255, 0.9);
+  border-radius: 10px;
+}
+[data-theme="dark"][data-skin="aurora"] .font-size-control__btn {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* ------------------------------------------------------------
+   Selettore della skin in sidebar
+   ------------------------------------------------------------ */
+.skin-toggle {
+  width: 100%;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+@media (max-width: 760px) {
+  [data-skin="aurora"] .page-header {
+    padding: 1.5rem 1.3rem;
+  }
+  [data-skin="aurora"] .page-header h1 {
+    font-size: 1.6rem;
+  }
+}

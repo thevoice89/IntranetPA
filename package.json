@@ -1,0 +1,34 @@
+{
+  "name": "intranet-aziendale",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "docker:dashboard": "node scripts/docker-dashboard.js",
+    "backup:sale": "python scripts/backup-calendario-sale.py"
+  },
+  "dependencies": {
+    "exceljs": "^4.4.0",
+    "next": "15.5.20",
+    "nodemailer": "^9.0.3",
+    "pdf-parse": "^2.4.5",
+    "pdfkit": "^0.19.1",
+    "pg": "^8.13.1",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "sanitize-html": "^2.17.6"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.7",
+    "@types/nodemailer": "^8.0.1",
+    "@types/pdfkit": "^0.17.6",
+    "@types/pg": "^8.11.10",
+    "@types/react": "^19.0.7",
+    "@types/react-dom": "^19.0.3",
+    "@types/sanitize-html": "^2.16.1",
+    "typescript": "^5.7.3"
+  }
+}

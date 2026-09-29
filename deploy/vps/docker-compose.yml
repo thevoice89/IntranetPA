@@ -1,0 +1,88 @@
+# Stack Intranet per una VPS su cui gira già un Traefik.
+#
+# NON include un reverse proxy: si aggancia al Traefik esistente (network_mode
+# host, docker provider con exposedbydefault=false, resolver ACME "letsencrypt")
+# tramite le label qui sotto, quindi le porte 80/443 restano sue.
+#
+# Uso (dalla root del progetto, sulla VM):
+#   docker compose -f deploy/vps/docker-compose.yml up -d --build
+#
+# "name: intranet" fissa i nomi dei volumi (intranet_pgdata / intranet_uploads)
+# e della rete (intranet_default): gli script di ripristino ci contano.
+name: intranet
+
+services:
+  # --- Applicazione Intranet (Next.js) ---------------------------------
+  intranet:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    container_name: intranet-app
+    restart: unless-stopped
+    # Nessuna porta pubblicata: ci arriva solo Traefik, dalla rete Docker.
+    expose:
+      - "3000"
+    environment:
+      # NB: niente TZ. Il container resta in UTC come sul server comunale: il
+      # codice formata le date con timeZone Europe/Rome esplicito e cambiare il
+      # fuso del container sposterebbe le date costruite lato server.
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - SYNC_TOKEN=${SYNC_TOKEN}
+      - UPLOAD_DIR=/app/uploads
+      - NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=${NEXT_SERVER_ACTIONS_ENCRYPTION_KEY}
+      - APP_BASE_URL=${APP_BASE_URL}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_SECURE=${SMTP_SECURE}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - SMTP_FROM=${SMTP_FROM}
+    volumes:
+      - uploads:/app/uploads
+    labels:
+      - "traefik.enable=true"
+      # Il container sta su più reti? No: una sola, ma la dichiariamo comunque
+      # perché Traefik altrimenti sceglie da solo quale IP usare.
+      - "traefik.docker.network=intranet_default"
+      - "traefik.http.routers.intranet.rule=Host(`${SITE_HOST}`)"
+      - "traefik.http.routers.intranet.entrypoints=websecure"
+      # Resolver già definito nello stack Traefik esistente (ACME httpchallenge).
+      - "traefik.http.routers.intranet.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.intranet.middlewares=intranet-auth,intranet-headers"
+      - "traefik.http.services.intranet.loadbalancer.server.port=3000"
+      # Password condivisa dai dipendenti, davanti a tutto il sito. L'hash sta
+      # nel .env (BASIC_AUTH_USERS): anche lì i "$" vanno RADDOPPIATI, Compose
+      # li interpreta pure nei valori del .env (verificato il 2026-09-03 con
+      # docker compose config, vedi env.esempio).
+      - "traefik.http.middlewares.intranet-auth.basicauth.users=${BASIC_AUTH_USERS}"
+      - "traefik.http.middlewares.intranet-auth.basicauth.realm=Intranet"
+      - "traefik.http.middlewares.intranet-headers.headers.stsseconds=31536000"
+      - "traefik.http.middlewares.intranet-headers.headers.stsincludesubdomains=true"
+      - "traefik.http.middlewares.intranet-headers.headers.contenttypenosniff=true"
+      - "traefik.http.middlewares.intranet-headers.headers.referrerpolicy=same-origin"
+    depends_on:
+      - db
+
+  # --- Database ----------------------------------------------------------
+  # Stessa immagine del server comunale: cambiarla richiede backup/restore
+  # (il volume non è compatibile tra immagini diverse).
+  db:
+    image: pgvector/pgvector:pg17
+    container_name: intranet-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    # Nessuna porta pubblicata: su una VM esposta a Internet la 5432 non si apre.
+    labels:
+      - "traefik.enable=false"
+
+volumes:
+  pgdata:
+  uploads:

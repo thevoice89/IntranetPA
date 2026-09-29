@@ -1,0 +1,27 @@
+node_modules
+.next
+.git
+.gitignore
+Dockerfile
+.dockerignore
+docker-compose.yml
+README.md
+npm-debug.log*
+# Tutti i .env, anche quelli nelle sottocartelle (deploy/vps/.env ha i
+# segreti della VPS): senza "**/" il pattern varrebbe solo per la radice.
+**/.env*
+!.env.example
+traefik/letsencrypt
+anteprima-*.html
+
+# Dati personali / documenti di lavoro nella cartella del progetto: non servono
+# alla build e non devono finire nel contesto Docker (COPY . . nel Dockerfile).
+**/*.xlsx
+**/*.xls
+**/*.csv
+**/*.doc
+**/*.sql
+**/*.dump
+**/~$*
+Documenti
+*_extract.txt

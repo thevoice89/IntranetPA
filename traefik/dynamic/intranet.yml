@@ -1,0 +1,18 @@
+# Configurazione dinamica di Traefik (file provider).
+# Instrada tutto il traffico della porta 80 verso l'app Next.js.
+# Per aggiungere container futuri: definire qui nuovi router/service.
+
+http:
+  routers:
+    intranet:
+      rule: "PathPrefix(`/`)"
+      entryPoints:
+        - web
+      service: intranet
+
+  services:
+    intranet:
+      loadBalancer:
+        servers:
+          # "intranet" = nome del servizio/container sulla rete Docker "web"
+          - url: "http://intranet:3000"
