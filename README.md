@@ -136,15 +136,31 @@ Serve un PostgreSQL raggiungibile tramite `DATABASE_URL`.
 
 ## Personalizzazione
 
-I riferimenti all'ente sono segnaposto. Da adattare prima dell'uso:
+Al primo avvio l'intranet usa dei segnaposto ("Comune di Esempio", stemma e logo
+generici). Si sostituiscono dal pannello, **senza toccare il codice né rifare la build**:
+accedi a `/admin` come amministratore e apri **Impostazioni** (`/admin/impostazioni`).
+
+| Cosa | Dove, in `/admin/impostazioni` |
+|---|---|
+| Nome dell'ente (titolo della scheda del browser, sottotitolo della home) | Ente e Intranet → *Nome dell'ente* |
+| Titolo e sottotitolo della home | Ente e Intranet |
+| Luogo nei PDF generati ("Esempio, <data>") | Ente e Intranet → *Luogo nei PDF* |
+| Email dell'accoglienza ("Di chi è?") | Ente e Intranet → *Email dell'accoglienza* |
+| Stemma (barra laterale) e logo (intestazione dei PDF) | Stemma e logo: carica un'immagine PNG, JPEG, WebP, GIF o SVG |
+| Coordinate e link del meteo in home | Meteo in home |
+| Nome e ordine delle sezioni della home | Sezioni della home |
+| Invio email (SMTP) | Email in uscita |
+
+Stemma e logo caricati finiscono nel volume `uploads` (quindi sopravvivono ai riavvii e
+rientrano nel backup) e "Ripristina predefinito" torna ai file in `public/stemma.png`,
+`public/logo.png` e `src/lib/pdf-assets/logo.png`. Le immagini vengono ridimensionate e
+convertite in PNG dal browser al momento del caricamento; il server accetta solo PNG
+(entro 2 MB e 2000 px per lato).
+
+Ancora nel codice, da adattare solo se serve:
 
 | Cosa | Dove |
 |---|---|
-| Nome dell'ente ("Comune di Esempio") | `src/app/layout.tsx`, `src/app/(site)/page.tsx`, `/admin/impostazioni` |
-| Stemma e logo | `public/stemma.png`, `public/logo.png`, `src/lib/pdf-assets/logo.png` |
-| Luogo nei PDF generati ("Esempio, <data>") | `src/lib/modulo-pdf.ts` |
-| Email dell'accoglienza | `src/lib/mail.ts` (`EMAIL_ACCOGLIENZA`) |
-| Coordinate e link del meteo in home | `src/lib/meteo.ts`, `src/app/(site)/page.tsx` (`METEO_URL`) |
 | Organigramma iniziale | `src/types/index.ts` (`UFFICI_COMUNE_DEFAULT`) |
 | Server usato dagli script di manutenzione | variabile `INTRANET_SSH_HOST` (`scripts/`) |
 

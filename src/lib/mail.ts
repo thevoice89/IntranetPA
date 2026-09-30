@@ -6,6 +6,7 @@
 // silenziosa finché nessuno valorizza host/utente.
 import nodemailer from "nodemailer";
 import { getImpostazioni } from "@/lib/data";
+import { brandingDa } from "@/lib/branding";
 import type { Modulo, Segnalazione, Sala, PrenotazioneSala, Pacco } from "@/types";
 
 export interface SmtpConfig {
@@ -244,11 +245,9 @@ export async function inviaNotificaAssistenza(
   });
 }
 
-// Indirizzo fisso della reception per "Di chi è?": a differenza delle altre
-// notifiche di questo file (segnalazioni, moduli, prenotazioni) non è
-// configurabile da pannello — è sempre lo stesso ufficio che ha registrato il
-// pacco e deve sapere chi è passato a dichiararlo suo.
-const EMAIL_ACCOGLIENZA = "accoglienza@comune.esempio.it";
+// L'indirizzo della reception per "Di chi è?" si imposta in /admin/impostazioni
+// (chiave ente_email_accoglienza, vedi lib/branding.ts): è sempre lo stesso ufficio
+// che ha registrato il pacco e deve sapere chi è passato a dichiararlo suo.
 
 // Notifica la reception che qualcuno ha dichiarato di essere il destinatario di
 // un pacco in attesa. Stesso stile "best effort" di inviaNotificaSegnalazione:
@@ -261,6 +260,11 @@ export async function inviaNotificaPaccoRivendicato(
   nome: string,
   email: string
 ): Promise<void> {
+  const emailAccoglienza = brandingDa(await getImpostazioni()).emailAccoglienza;
+  if (!emailAccoglienza) {
+    console.warn(`[mail] Email accoglienza non configurata (/admin/impostazioni): notifica pacco rivendicato (${pacco.id}) non inviata.`);
+    return;
+  }
   const cfg = await resolveSmtpConfig();
   if (!smtpConfigurato(cfg)) {
     console.warn(`[mail] SMTP non configurato: notifica pacco rivendicato (${pacco.id}) non inviata.`);
@@ -275,7 +279,7 @@ export async function inviaNotificaPaccoRivendicato(
 
   await buildTransporter(cfg).sendMail({
     from: cfg.from,
-    to: EMAIL_ACCOGLIENZA,
+    to: emailAccoglienza,
     subject: `Pacco rivendicato da ${nome}`,
     text: dettagli,
     html: `<p>${escapeHtml(dettagli).replace(/\n/g, "<br>")}</p>`,

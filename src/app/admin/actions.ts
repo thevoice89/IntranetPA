@@ -33,6 +33,15 @@ import { oggiIso } from "@/lib/format";
 import { sanitizeRicco } from "@/lib/rich-text";
 import * as data from "@/lib/data";
 import { saveUpload, deleteUpload } from "@/lib/uploads";
+import {
+  CHIAVI_BRANDING,
+  IMMAGINI_ENTE,
+  coordinataValida,
+  eTipoImmagineEnte,
+  emailValida,
+  urlHttpValido,
+  verificaPng,
+} from "@/lib/branding";
 import { extractPdfText } from "@/lib/pdf-text";
 import { inviaRispostaSegnalazione, inviaEmailProva } from "@/lib/mail";
 import {
@@ -1388,13 +1397,92 @@ export async function salvaPubblicazioneMenu(chiave: string, pubblicato: boolean
 // ===================== IMPOSTAZIONI SITO (solo admin) ==================
 export async function salvaImpostazioniGenerali(formData: FormData) {
   await requireAdmin();
+  const emailAccoglienza = str(formData, "emailAccoglienza");
+  if (emailAccoglienza && !emailValida(emailAccoglienza)) {
+    redirect("/admin/impostazioni?error=emailAccoglienza");
+  }
   await data.salvaImpostazioni({
     sito_titolo: str(formData, "sitoTitolo"),
     sito_sottotitolo: str(formData, "sitoSottotitolo"),
+    [CHIAVI_BRANDING.nome]: str(formData, "enteNome"),
+    [CHIAVI_BRANDING.luogo]: str(formData, "enteLuogo"),
+    [CHIAVI_BRANDING.emailAccoglienza]: emailAccoglienza,
   });
   revalidatePath("/admin/impostazioni");
   revalidatePath("/", "layout");
-  redirect("/admin/impostazioni");
+  redirect("/admin/impostazioni?salvato=1");
+}
+
+// Posizione e link del widget meteo in home. Campo vuoto = di nuovo il default
+// (Roma, vedi DEFAULT_BRANDING); coordinate fuori range o link non http(s) vengono
+// rifiutati invece di salvare un valore che farebbe fallire silenziosamente il widget.
+export async function salvaImpostazioniMeteo(formData: FormData) {
+  await requireAdmin();
+  const latitudine = str(formData, "meteoLatitudine");
+  const longitudine = str(formData, "meteoLongitudine");
+  const url = str(formData, "meteoUrl");
+  if ((latitudine === "") !== (longitudine === "")) redirect("/admin/impostazioni?error=meteoCoppia");
+  if (latitudine && !coordinataValida(latitudine, 90)) redirect("/admin/impostazioni?error=meteoLatitudine");
+  if (longitudine && !coordinataValida(longitudine, 180)) redirect("/admin/impostazioni?error=meteoLongitudine");
+  if (url && !urlHttpValido(url)) redirect("/admin/impostazioni?error=meteoUrl");
+  await data.salvaImpostazioni({
+    [CHIAVI_BRANDING.meteoLatitudine]: latitudine.replace(",", "."),
+    [CHIAVI_BRANDING.meteoLongitudine]: longitudine.replace(",", "."),
+    [CHIAVI_BRANDING.meteoUrl]: url,
+  });
+  revalidatePath("/admin/impostazioni");
+  revalidatePath("/", "layout");
+  redirect("/admin/impostazioni?salvato=1");
+}
+
+// Stemma e logo dell'ente. Chiamate direttamente dal client (ImmagineEnteForm):
+// niente redirect, l'esito torna al componente che lo mostra inline, come
+// inviaEmailProvaAction più sotto. Il browser ha già convertito l'immagine in PNG e
+// l'ha ridimensionata; qui si ricontrolla tutto (firma PNG, dimensioni, peso) perché
+// il client non è mai una garanzia. Il vecchio file viene cancellato solo dopo aver
+// salvato il riferimento al nuovo, così un errore a metà non lascia l'ente senza
+// immagine.
+export async function caricaImmagineEnte(
+  formData: FormData
+): Promise<{ ok?: true; error?: string }> {
+  await requireAdmin();
+  const tipo = str(formData, "tipo");
+  const file = formData.get("file");
+  if (!eTipoImmagineEnte(tipo)) return { error: "Tipo di immagine non valido." };
+  if (!(file instanceof File) || file.size === 0) return { error: "Scegli un'immagine da caricare." };
+
+  const verifica = verificaPng(Buffer.from(await file.arrayBuffer()));
+  if (!verifica.ok) return { error: verifica.errore };
+
+  const chiave = IMMAGINI_ENTE[tipo].chiaveFile;
+  const precedente = (await data.getImpostazioni())[chiave] ?? "";
+  const { storedName } = await saveUpload(file);
+  try {
+    await data.salvaImpostazioni({ [chiave]: storedName });
+  } catch (e) {
+    await deleteUpload(storedName);
+    throw e;
+  }
+  if (precedente) await deleteUpload(precedente);
+  revalidatePath("/admin/impostazioni");
+  revalidatePath("/", "layout");
+  return { ok: true };
+}
+
+// Torna all'immagine predefinita del progetto (i segnaposto in public/ e
+// src/lib/pdf-assets/).
+export async function ripristinaImmagineEnte(
+  tipo: string
+): Promise<{ ok?: true; error?: string }> {
+  await requireAdmin();
+  if (!eTipoImmagineEnte(tipo)) return { error: "Tipo di immagine non valido." };
+  const chiave = IMMAGINI_ENTE[tipo].chiaveFile;
+  const precedente = (await data.getImpostazioni())[chiave] ?? "";
+  await data.salvaImpostazioni({ [chiave]: "" });
+  if (precedente) await deleteUpload(precedente);
+  revalidatePath("/admin/impostazioni");
+  revalidatePath("/", "layout");
+  return { ok: true };
 }
 
 function smtpValoriDaForm(formData: FormData): Record<string, string> {

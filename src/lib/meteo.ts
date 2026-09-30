@@ -1,10 +1,9 @@
 // Meteo per il widget in home: Open-Meteo (api.open-meteo.com), servizio gratuito
-// senza chiave/API key, coordinate fisse del comune (qui sotto, da personalizzare: l'esempio è Roma). Nessuna dipendenza
+// senza chiave/API key. Le coordinate del comune si impostano da
+// /admin/impostazioni (vedi lib/branding.ts, di default Roma). Nessuna dipendenza
 // da variabili d'ambiente: se il servizio non risponde (rete assente sull'host,
 // timeout) il widget lo mostra semplicemente come non disponibile, senza bloccare
 // il caricamento della home (vedi (site)/page.tsx).
-const LATITUDINE = 41.9028;
-const LONGITUDINE = 12.4964;
 
 const CODICI_METEO: Record<number, { label: string; icona: string }> = {
   0: { label: "Sereno", icona: "☀️" },
@@ -43,10 +42,13 @@ export interface MeteoOggi {
   icona: string;
 }
 
-export async function getMeteoOggi(): Promise<MeteoOggi | null> {
+export async function getMeteoOggi(posizione: {
+  latitudine: number;
+  longitudine: number;
+}): Promise<MeteoOggi | null> {
   try {
     const url =
-      `https://api.open-meteo.com/v1/forecast?latitude=${LATITUDINE}&longitude=${LONGITUDINE}` +
+      `https://api.open-meteo.com/v1/forecast?latitude=${posizione.latitudine}&longitude=${posizione.longitudine}` +
       `&current=temperature_2m,weather_code&timezone=Europe%2FRome`;
     const res = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(4000) });
     if (!res.ok) return null;

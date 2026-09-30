@@ -9,6 +9,7 @@ import {
   listPacchiInAttesa,
 } from "@/lib/data";
 import { getMeteoOggi } from "@/lib/meteo";
+import { brandingDa } from "@/lib/branding";
 import { getProssimaVoceCalendario } from "@/lib/calendario";
 import { getCurrentUser, canEditComunicazioneItem } from "@/lib/auth";
 import { formatData, formatOrarioEvento, mostraInEvidenza } from "@/lib/format";
@@ -21,10 +22,6 @@ import { ComunicazioneCard } from "@/components/ui/ComunicazioneCard";
 import type { Comunicazione } from "@/types";
 
 export const dynamic = "force-dynamic";
-
-// URL 3bmeteo del proprio comune (da personalizzare): destinazione del widget meteo
-// cliccabile nell'header (vedi <header> più sotto).
-const METEO_URL = "https://www.3bmeteo.com/meteo/roma";
 
 // "Adesso" in ora italiana esplicita: il processo Node in produzione gira in UTC
 // (vedi project_fix_timezone_orari), quindi new Date().getHours() darebbe l'ora
@@ -64,7 +61,7 @@ export default async function HomePage() {
       getOrdineMenu("home"),
       getImpostazioni(),
       getAssentiOggi(),
-      getMeteoOggi(),
+      getImpostazioni().then((imp) => getMeteoOggi(brandingDa(imp).meteo)),
       getPrenotazioniInCorso(dataOggi, oraAdesso),
       listPacchiInAttesa(),
       getProssimaVoceCalendario(dataOggi, oraAdesso),
@@ -78,7 +75,9 @@ export default async function HomePage() {
   );
 
   const titolo = impostazioni["sito_titolo"] || "Benvenuto nell'Intranet";
-  const sottotitolo = impostazioni["sito_sottotitolo"] || "Comune di Esempio";
+  const branding = brandingDa(impostazioni);
+  // Sottotitolo non impostato: si mostra il nome dell'ente (/admin/impostazioni).
+  const sottotitolo = impostazioni["sito_sottotitolo"] || branding.nome;
 
   // "In evidenza" promuove la comunicazione nel blocco in cima alla pagina,
   // qualunque sia il tipo (ufficiale, non ufficiale, RSU, sicurezza, eventi o formazione).
@@ -231,7 +230,7 @@ export default async function HomePage() {
           </div>
           {meteo && (
             <a
-              href={METEO_URL}
+              href={branding.meteo.url}
               target="_blank"
               rel="noopener noreferrer"
               className="card header-meteo"

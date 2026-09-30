@@ -1,19 +1,19 @@
 import path from "node:path";
 import PDFDocument from "pdfkit";
 import type { ModuloCompilazione } from "@/types";
+import { caricaLogoPdf } from "@/lib/pdf-logo";
 
 // path hardcoded, letti a runtime: non passano da un import/require statico,
 // quindi il tracing dell'output standalone non li rileva da solo (vedi
 // outputFileTracingIncludes in next.config.mjs). I file restano fuori da
 // "public" di proposito: il font va incorporato nei PDF generati (uso
-// previsto dalla licenza), non servito come file scaricabile a sé; il logo è
-// una copia ridimensionata ad hoc per l'incorporamento nel PDF (960px invece
-// dei 2688px di public/logo.png, che gonfierebbe ogni PDF di ~1 MB inutili).
+// previsto dalla licenza), non servito come file scaricabile a sé. Il logo
+// viene da lib/pdf-logo.ts: quello caricato dall'ente (già ridimensionato a
+// 960px dal browser, vedi ImmagineEnteForm) o la copia predefinita in
+// pdf-assets, non i 2688px di public/logo.png che gonfierebbero ogni PDF.
 const PDF_ASSETS_DIR = path.join(process.cwd(), "src/lib/pdf-assets");
 const FONT_REGULAR = path.join(PDF_ASSETS_DIR, "fonts/trebuchet-regular.ttf");
 const FONT_BOLD = path.join(PDF_ASSETS_DIR, "fonts/trebuchet-bold.ttf");
-const LOGO_PATH = path.join(PDF_ASSETS_DIR, "logo.png");
-const LOGO_ASPECT = 384 / 960; // altezza/larghezza di pdf-assets/logo.png
 
 function formatDataOra(iso: string): string {
   const d = new Date(iso);
@@ -30,7 +30,8 @@ function formatDataOra(iso: string): string {
 // Genera il PDF in carta intestata di una compilazione ricevuta (domanda +
 // risposta data, non il modulo in bianco): usato dal backoffice dell'ufficio
 // per stampare/archiviare una copia ufficiale di quanto inviato.
-export function generateCompilazionePdf(c: ModuloCompilazione): Promise<Buffer> {
+export async function generateCompilazionePdf(c: ModuloCompilazione): Promise<Buffer> {
+  const logo = await caricaLogoPdf();
   // "font" esplicito: pdfkit di default inizializza il documento con lo
   // standard "Helvetica", caricato da un path relativo a __dirname dentro
   // pdfkit stesso — path che si rompe quando webpack impacchetta il codice
@@ -50,10 +51,9 @@ export function generateCompilazionePdf(c: ModuloCompilazione): Promise<Buffer> 
   const left = doc.page.margins.left;
   const right = doc.page.width - doc.page.margins.right;
 
-  // --- Intestazione: logo del Comune + riga separatrice ---
-  const logoWidth = 220;
-  doc.image(LOGO_PATH, left, doc.y, { width: logoWidth });
-  doc.y += logoWidth * LOGO_ASPECT + 16;
+  // --- Intestazione: logo dell'ente + riga separatrice ---
+  doc.image(logo.buffer, left, doc.y, { width: logo.width, height: logo.height });
+  doc.y += logo.height + 16;
   doc
     .moveTo(left, doc.y)
     .lineTo(right, doc.y)

@@ -5,6 +5,8 @@ import "./globals.css";
 // selettore per tornare alla precedente). Importata dopo globals.css così vince
 // a parità di specificità.
 import "./skin-aurora.css";
+import { getBranding } from "@/lib/branding-data";
+import { DEFAULT_BRANDING } from "@/lib/branding";
 
 // Ambiente di test (vedi docker-compose di staging): STAGING=true è impostato
 // SOLO nel container di staging, mai in produzione. Da qui derivano il prefisso
@@ -14,14 +16,17 @@ import "./skin-aurora.css";
 const isStaging = process.env.STAGING === "true";
 
 // generateMetadata (non un export const statico) perché il titolo deve
-// riflettere l'env del container in esecuzione, non essere fissato al build:
-// la stessa immagine gira sia in produzione sia in staging.
+// riflettere l'env del container in esecuzione e il nome dell'ente configurato in
+// /admin/impostazioni, non essere fissati al build: la stessa immagine gira sia in
+// produzione sia in staging, e il nome si cambia senza rifare il deploy.
 export async function generateMetadata(): Promise<Metadata> {
+  // Se il DB non risponde la pagina deve comunque partire (con il nome di default).
+  const nome = await getBranding()
+    .then((b) => b.nome)
+    .catch(() => DEFAULT_BRANDING.nome);
   return {
-    title: isStaging
-      ? "🧪 TEST — Intranet · Comune di Esempio"
-      : "Intranet · Comune di Esempio",
-    description: "Portale intranet del Comune di Esempio",
+    title: isStaging ? `🧪 TEST — Intranet · ${nome}` : `Intranet · ${nome}`,
+    description: `Portale intranet: ${nome}`,
   };
 }
 

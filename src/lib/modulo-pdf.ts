@@ -1,14 +1,15 @@
 import path from "node:path";
 import PDFDocument from "pdfkit";
 import type { Modulo, ModuloCampo } from "@/types";
+import { caricaLogoPdf } from "@/lib/pdf-logo";
+import { getBranding } from "@/lib/branding-data";
 
-// Stessi asset di compilazione-pdf.ts (vedi lì per il motivo del path assoluto
-// letto a runtime e del font passato subito a PDFDocument).
+// Stessi font di compilazione-pdf.ts (vedi lì per il motivo del path assoluto
+// letto a runtime e del font passato subito a PDFDocument). Il logo non è più un
+// file fisso: viene da lib/pdf-logo.ts (quello caricato dall'ente, o il predefinito).
 const PDF_ASSETS_DIR = path.join(process.cwd(), "src/lib/pdf-assets");
 const FONT_REGULAR = path.join(PDF_ASSETS_DIR, "fonts/trebuchet-regular.ttf");
 const FONT_BOLD = path.join(PDF_ASSETS_DIR, "fonts/trebuchet-bold.ttf");
-const LOGO_PATH = path.join(PDF_ASSETS_DIR, "logo.png");
-const LOGO_ASPECT = 384 / 960;
 
 function formatDataOggi(): string {
   return new Date().toLocaleDateString("it-IT", {
@@ -128,11 +129,12 @@ function trovaNomeCompilatore(campi: ModuloCampo[], valori: Map<string, string>)
 // stampato sotto la firma insieme a data e ora di generazione: non sostituisce
 // una vera firma digitale, ma dà al cartaceo firmato a mano una traccia
 // verificabile di quando e da dove è stato generato.
-export function generateModuloPdfCompilato(
+export async function generateModuloPdfCompilato(
   modulo: Modulo,
   valori: Map<string, string>,
   ip?: string
 ): Promise<Buffer> {
+  const [logo, branding] = await Promise.all([caricaLogoPdf(), getBranding()]);
   const doc = new PDFDocument({ size: "A4", margin: 56, font: FONT_REGULAR });
   doc.registerFont("Trebuchet", FONT_REGULAR);
   doc.registerFont("Trebuchet-Bold", FONT_BOLD);
@@ -148,10 +150,9 @@ export function generateModuloPdfCompilato(
   const right = doc.page.width - doc.page.margins.right;
   const width = right - left;
 
-  // --- Intestazione: solo il logo del Comune, senza riga separatrice ---
-  const logoWidth = 220;
-  doc.image(LOGO_PATH, left, doc.y, { width: logoWidth });
-  doc.y += logoWidth * LOGO_ASPECT + 16;
+  // --- Intestazione: solo il logo dell'ente, senza riga separatrice ---
+  doc.image(logo.buffer, left, doc.y, { width: logo.width, height: logo.height });
+  doc.y += logo.height + 16;
   doc.moveDown(1.8);
 
   // --- Titolo del modulo, centrato come intestazione della lettera ---
@@ -167,7 +168,7 @@ export function generateModuloPdfCompilato(
     .font("Trebuchet")
     .fontSize(10)
     .fillColor("#14171f")
-    .text(`Esempio, ${formatDataOggi()}`, left, doc.y, { width, align: "right" });
+    .text(`${branding.luogo}, ${formatDataOggi()}`, left, doc.y, { width, align: "right" });
   doc.moveDown(1);
   if (modulo.pdfDestinatario) {
     doc.text(`Al ${modulo.pdfDestinatario}`, left, doc.y, { width, align: "right" });

@@ -6,6 +6,7 @@ import { ordinaConFallback } from "@/lib/ordina-menu";
 import { applicaEtichette } from "@/lib/etichette-menu";
 import { filtraPubblicati } from "@/lib/pubblicazione-menu";
 import { NAV_ITEMS } from "@/lib/routes";
+import { brandingDa } from "@/lib/branding";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +32,7 @@ export default async function SiteLayout({
   const [contattoCollegato, anagraficaCollegata] = user?.contattoId
     ? await Promise.all([getContatto(user.contattoId), getAnagraficaPrivata(user.contattoId)])
     : [null, null];
+  const branding = brandingDa(impostazioni);
   const nomeUtente = user ? contattoCollegato?.nome ?? user.username : null;
   const genereUtente = anagraficaCollegata?.genere || null;
   const items = filtraPubblicati(
@@ -53,6 +55,8 @@ export default async function SiteLayout({
         ufficiComunicazioni={ufficiComunicazioni}
         nomeUtente={nomeUtente}
         genereUtente={genereUtente}
+        stemmaUrl={branding.stemmaUrl}
+        nomeEnte={branding.nome}
       />
       <main className="main">{children}</main>
     </div>

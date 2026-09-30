@@ -21,6 +21,7 @@ import { sottopostiDi } from "@/lib/gerarchia";
 import { buildAdminMenuItems } from "@/lib/admin-menu";
 import { ordinaConFallback } from "@/lib/ordina-menu";
 import { applicaEtichette } from "@/lib/etichette-menu";
+import { brandingDa } from "@/lib/branding";
 import { logoutAction } from "@/app/admin/actions";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { FontSizeControl } from "@/components/layout/FontSizeControl";
@@ -81,13 +82,15 @@ export default async function PanelLayout({
     impostazioni
   );
 
+  const branding = brandingDa(impostazioni);
+
   return (
     <div className="shell">
       <MobileNavToggle />
       <aside className="sidebar">
         <Link href="/" className="sidebar__brand sidebar__brand--crest">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/stemma.png" alt="Stemma dell'ente" className="sidebar__brand-crest-img" />
+          <img src={branding.stemmaUrl} alt={`Stemma: ${branding.nome}`} className="sidebar__brand-crest-img" />
           <span className="sidebar__brand-caption">Pagina personale</span>
         </Link>
 

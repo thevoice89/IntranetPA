@@ -21,11 +21,16 @@ export function Sidebar({
   ufficiComunicazioni,
   nomeUtente,
   genereUtente,
+  stemmaUrl,
+  nomeEnte,
 }: {
   items: AppRoute[];
   ufficiComunicazioni: Ufficio[];
   nomeUtente: string | null;
   genereUtente: string | null;
+  // Stemma e nome dell'ente configurati in /admin/impostazioni (vedi lib/branding.ts).
+  stemmaUrl: string;
+  nomeEnte: string;
 }) {
   const pathname = usePathname();
   // null = nessuna scelta manuale dell'utente: il sottomenu segue la voce attiva.
@@ -47,8 +52,8 @@ export function Sidebar({
 
   return (
     <aside className="sidebar">
-      {/* Stemma del Comune (non il vecchio lockup orizzontale con testo,
-          vedi logo.png ancora usato in admin): provato prima nel riquadro
+      {/* Stemma dell'ente (non il vecchio lockup orizzontale con testo,
+          cioè il logo, oggi usato solo nei PDF): provato prima nel riquadro
           titolo del corpo pagina, tornato qui su richiesta esplicita
           dell'utente. Home e accesso subito sotto: da loggati "Login"
           diventa il saluto già esistente (sidebar__utente prima stava più in
@@ -57,7 +62,7 @@ export function Sidebar({
           dopo l'accesso si torna qui, non in /admin. */}
       <Link href={ROUTES.home.path} className="sidebar__brand sidebar__brand--crest">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/stemma.png" alt="Stemma dell'ente" className="sidebar__brand-crest-img" />
+        <img src={stemmaUrl} alt={`Stemma: ${nomeEnte}`} className="sidebar__brand-crest-img" />
       </Link>
 
       <div className="sidebar__topnav">
